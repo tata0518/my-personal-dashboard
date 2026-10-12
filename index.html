@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>マイダッシュボード</title>
+<style>
+:root{--bg:#f4f5f7;--card:#fff;--tx:#1d2330;--sub:#6b7280;--line:#e5e7eb;--pri:#2563eb;--red:#e11d48}
+@media(prefers-color-scheme:dark){:root{--bg:#12151c;--card:#1c212b;--tx:#e8eaf0;--sub:#9aa3b2;--line:#2d3441;--pri:#60a5fa;--red:#fb7185}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{font-family:-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;background:var(--bg);color:var(--tx);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top)}
+header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;font-weight:700;font-size:18px}
+header button{background:none;border:0;font-size:20px;color:var(--sub)}
+main{flex:1;overflow-y:auto;padding:0 12px 90px;position:relative}
+nav{display:flex;border-top:1px solid var(--line);background:var(--card);padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;padding:10px 0;background:none;border:0;color:var(--sub);font-size:12px}
+nav button span{display:block;font-size:20px}
+nav button.on{color:var(--pri);font-weight:700}
+.tab{display:none}.tab.on{display:block}
+.card{background:var(--card);border-radius:12px;padding:12px;margin-bottom:10px;border:1px solid var(--line)}
+.link{display:block;text-align:center;text-decoration:none;color:var(--pri);font-weight:600;padding:12px}
+.row{display:flex;gap:8px;align-items:center}
+select,input,textarea,button.btn{font:inherit;color:var(--tx);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px}
+select,input[type=text],input[type=date],textarea{width:100%}
+textarea{min-height:90px}
+.btn{cursor:pointer}.btn.p{background:var(--pri);color:#fff;border-color:var(--pri)}.btn.d{color:var(--red)}
+.seg{display:flex;margin:8px 0}
+.seg button{flex:1;padding:8px;border:1px solid var(--line);background:var(--card);color:var(--sub)}
+.seg button:first-child{border-radius:8px 0 0 8px}.seg button:last-child{border-radius:0 8px 8px 0}
+.seg button.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+.next{font-size:15px;margin:6px 0 10px}.next b{font-size:26px}
+.tt{display:grid;grid-template-columns:44px 1fr}
+.tt>div{padding:8px 4px;border-bottom:1px solid var(--line)}
+.tt .h{font-weight:700;color:var(--sub);text-align:center}
+.tt .m{display:flex;flex-wrap:wrap;gap:6px}
+.tt .m span{min-width:34px;text-align:center;padding:3px 4px;border-radius:50%;border:2px solid transparent;font-variant-numeric:tabular-nums}
+.tt .m span.past{color:var(--sub);opacity:.45}
+.tt .m span.nx{border-color:var(--red);color:var(--red);font-weight:700}
+.empty{color:var(--sub);text-align:center;padding:30px 10px;line-height:1.7}
+.todo{display:flex;align-items:center;gap:8px}
+.todo .bd{flex:1;min-width:0}
+.todo .t{font-weight:600;word-break:break-all}
+.todo .meta{font-size:12px;color:var(--sub);margin-top:3px;display:flex;gap:6px;flex-wrap:wrap}
+.todo.done .t{text-decoration:line-through;color:var(--sub)}
+.pri{display:inline-block;width:22px;height:22px;line-height:22px;text-align:center;border-radius:6px;color:#fff;font-size:12px;font-weight:700}
+.pA{background:#e11d48}.pB{background:#f59e0b}.pC{background:#64748b}
+.over{color:var(--red);font-weight:700}
+.ic{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--bg);font-size:16px;color:var(--tx)}
+.ic.ok{color:#16a34a}
+#fab{position:fixed;right:18px;bottom:calc(76px + env(safe-area-inset-bottom));width:56px;height:56px;border-radius:50%;border:0;background:var(--pri);color:#fff;font-size:30px;box-shadow:0 4px 12px #0004;display:none}
+body.todo-on #fab{display:block}
+.mask{position:fixed;inset:0;background:#0007;display:none;align-items:flex-end;justify-content:center;z-index:10}
+.mask.on{display:flex}
+.modal{background:var(--card);width:100%;max-width:520px;max-height:92%;overflow-y:auto;border-radius:16px 16px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
+.modal h3{margin:0 0 10px}
+.modal label{display:block;font-size:12px;color:var(--sub);margin:10px 0 4px}
+.modal .acts{display:flex;gap:8px;margin-top:16px}.modal .acts .btn{flex:1}
+small{color:var(--sub)}
+</style>
+</head>
+<body>
+<header><span id="ttl">🚌 バス時刻表</span><button id="gear">⚙️</button></header>
+<main>
+ <section class="tab on" id="tab-bus">
+  <div class="card"><a class="link" target="_blank" rel="noopener" href="https://www.kotsu.metro.tokyo.jp/bus/unkou/">🔗 都営バス 運行情報を見る</a></div>
+  <div class="card">
+   <div class="row"><select id="stopSel"></select><button class="btn" id="stopEdit">編集</button><button class="btn p" id="stopAdd">＋</button></div>
+   <div class="seg" id="daySeg"><button data-d="wd">平日</button><button data-d="sa">土曜</button><button data-d="ho">日祝</button></div>
+   <div id="busBody"></div>
+  </div>
+ </section>
+ <section class="tab" id="tab-todo">
+  <div id="todoList"></div>
+  <label class="row" style="justify-content:center"><input type="checkbox" id="showDone"><small>完了済みも表示</small></label>
+ </section>
+</main>
+<button id="fab">＋</button>
+<nav>
+ <button data-t="bus" class="on"><span>🚌</span>バス</button>
+ <button data-t="todo"><span>✅</span>やること</button>
+</nav>
+
+<!-- バス停モーダル -->
+<div class="mask" id="mStop"><div class="modal">
+ <h3 id="mStopT">バス停の登録</h3>
+ <label>バス停名・系統（例：渋谷駅前 都01）</label><input type="text" id="sName">
+ <label>平日の時刻</label><textarea id="sWd" placeholder="5:30 6:05 6:40 ... (スペース・改行・カンマ区切り)"></textarea>
+ <label>土曜の時刻</label><textarea id="sSa"></textarea>
+ <label>日祝の時刻</label><textarea id="sHo"></textarea>
+ <small>「H:MM」形式。コピペでOK。時台ごとに自動で並びます。</small>
+ <div class="acts"><button class="btn d" id="sDel">削除</button><button class="btn" data-close>キャンセル</button><button class="btn p" id="sSave">保存</button></div>
+</div></div>
+
+<!-- やること モーダル -->
+<div class="mask" id="mTodo"><div class="modal">
+ <h3 id="mTodoT">新規タスク</h3>
+ <label>タイトル</label><input type="text" id="tTitle">
+ <label>重要度</label>
+ <div class="seg" id="priSeg"><button data-p="A">A</button><button data-p="B">B</button><button data-p="C">C</button></div>
+ <label>カテゴリー（選択 or 新規入力）</label><input type="text" id="tCat" list="catList"><datalist id="catList"></datalist>
+ <label>内容</label><textarea id="tBody"></textarea>
+ <label>期限</label>
+ <div class="row"><input type="date" id="tDue"><label class="row" style="margin:0;white-space:nowrap"><input type="checkbox" id="tNoDue" checked> 期限なし</label></div>
+ <div class="acts"><button class="btn d" id="tDel">削除</button><button class="btn" data-close>キャンセル</button><button class="btn p" id="tSave">保存</button></div>
+</div></div>
+
+<!-- 設定モーダル -->
+<div class="mask" id="mSet"><div class="modal">
+ <h3>⚙️ Googleスプレッドシート同期</h3>
+ <small>Apps ScriptのウェブアプリURLを入れると、変更のたびに自動保存し、起動時に読み込みます。空欄ならこの端末内（localStorage）のみ。</small>
+ <label>Apps Script URL</label><input type="text" id="gasUrl" placeholder="https://script.google.com/macros/s/.../exec">
+ <div id="syncMsg"><small></small></div>
+ <div class="acts"><button class="btn" id="pull">読込</button><button class="btn" id="push">送信</button><button class="btn p" id="setSave">保存</button></div>
+ <div class="acts"><button class="btn" data-close>閉じる</button></div>
+</div></div>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,10);
+const KEY='myDash.v1', URLKEY='myDash.gas';
+let S={stops:[],todos:[],curStop:null}, ui={day:null,pri:'B',editStop:null,editTodo:null};
+
+/* ---------- 保存・同期 ---------- */
+try{const r=localStorage.getItem(KEY); if(r) S=Object.assign(S,JSON.parse(r));}catch(e){}
+const gas=()=>{try{return localStorage.getItem(URLKEY)||''}catch(e){return ''}};
+let tmr;
+function save(){
+  try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
+  clearTimeout(tmr); if(gas()) tmr=setTimeout(push,800);
+}
+async function push(){
+  if(!gas()) return msg('URL未設定');
+  try{await fetch(gas(),{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(S)});msg('送信しました '+new Date().toLocaleTimeString())}
+  catch(e){msg('送信失敗: '+e.message)}
+}
+async function pull(){
+  if(!gas()) return msg('URL未設定');
+  try{const r=await fetch(gas()); const d=await r.json();
+    if(d&&(d.stops||d.todos)){S=Object.assign({stops:[],todos:[],curStop:null},d);try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}renderAll();msg('読み込みました')}
+    else msg('シートにデータがありません');
+  }catch(e){msg('読込失敗: '+e.message)}
+}
+const msg=t=>$('#syncMsg').innerHTML='<small>'+esc(t)+'</small>';
+
+/* ---------- 共通UI ---------- */
+const open=id=>$(id).classList.add('on'), close=()=>$$('.mask').forEach(m=>m.classList.remove('on'));
+$$('[data-close]').forEach(b=>b.onclick=close);
+$$('.mask').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)close()}));
+$$('nav button').forEach(b=>b.onclick=()=>{
+  $$('nav button').forEach(x=>x.classList.toggle('on',x===b));
+  $$('.tab').forEach(t=>t.classList.toggle('on',t.id==='tab-'+b.dataset.t));
+  document.body.classList.toggle('todo-on',b.dataset.t==='todo');
+  $('#ttl').textContent=b.dataset.t==='bus'?'🚌 バス時刻表':'✅ やることリスト';
+  if(b.dataset.t==='bus') scrollNext();
+});
+
+/* ---------- バス時刻表 ---------- */
+const DN={wd:'平日',sa:'土曜',ho:'日祝'};
+const todayDay=()=>{const d=new Date().getDay();return d===0?'ho':d===6?'sa':'wd'};
+const toMin=t=>{const m=t.match(/^(\d{1,2}):(\d{2})$/);return m?+m[1]*60+ +m[2]:null};
+function parseTimes(txt){
+  const out=new Set();
+  (txt.match(/\d{1,2}[:：]\d{2}/g)||[]).forEach(t=>{t=t.replace('：',':');const m=toMin(t);if(m!==null&&m<1700)out.add(m)});
+  return [...out].sort((a,b)=>a-b);
+}
+const fmtT=m=>Math.floor(m/60)+':'+String(m%60).padStart(2,'0');
+function renderStops(){
+  const sel=$('#stopSel');
+  sel.innerHTML=S.stops.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('')||'<option>（未登録）</option>';
+  if(!S.stops.find(s=>s.id===S.curStop)) S.curStop=S.stops[0]?.id||null;
+  sel.value=S.curStop||'';
+  $('#stopEdit').style.display=S.stops.length?'':'none';
+}
+function renderBus(){
+  ui.day=ui.day||todayDay();
+  $$('#daySeg button').forEach(b=>b.classList.toggle('on',b.dataset.d===ui.day));
+  const st=S.stops.find(s=>s.id===S.curStop), box=$('#busBody');
+  if(!st){box.innerHTML='<div class="empty">バス停が未登録です。<br>右上の「＋」から時刻表を入力してください。</div>';return}
+  const times=parseTimes((st.t||{})[ui.day]||'');
+  if(!times.length){box.innerHTML=`<div class="empty">${DN[ui.day]}の時刻が未入力です。<br>「編集」から入力してください。</div>`;return}
+  const now=new Date(), nm=now.getHours()*60+now.getMinutes();
+  const isToday=ui.day===todayDay();
+  const nx=isToday?times.find(t=>t>=nm):null;
+  let head='';
+  if(isToday) head=nx!=null?`<div class="next">次のバス <b>${fmtT(nx)}</b>　あと${nx-nm}分</div>`:'<div class="next">本日の運行は終了しました</div>';
+  const byH={}; times.forEach(t=>(byH[Math.floor(t/60)]??=[]).push(t));
+  let g='<div class="tt">';
+  Object.keys(byH).forEach(h=>{
+    g+=`<div class="h">${h}</div><div class="m">`+byH[h].map(t=>`<span class="${isToday&&t<nm?'past':''} ${t===nx?'nx':''}" ${t===nx?'id="nxEl"':''}>${String(t%60).padStart(2,'0')}</span>`).join('')+'</div>';
+  });
+  box.innerHTML=head+g+'</div>';
+  scrollNext();
+}
+function scrollNext(){setTimeout(()=>{const e=$('#nxEl');if(e&&$('#tab-bus').classList.contains('on'))e.scrollIntoView({block:'center',behavior:'smooth'})},80)}
+$('#stopSel').onchange=e=>{S.curStop=e.target.value;save();renderBus()};
+$$('#daySeg button').forEach(b=>b.onclick=()=>{ui.day=b.dataset.d;renderBus()});
+function openStop(id){
+  ui.editStop=id; const s=S.stops.find(x=>x.id===id)||{name:'',t:{}};
+  $('#mStopT').textContent=id?'バス停の編集':'バス停の登録';
+  $('#sName').value=s.name; $('#sWd').value=s.t?.wd||''; $('#sSa').value=s.t?.sa||''; $('#sHo').value=s.t?.ho||'';
+  $('#sDel').style.display=id?'':'none'; open('#mStop');
+}
+$('#stopAdd').onclick=()=>openStop(null);
+$('#stopEdit').onclick=()=>openStop(S.curStop);
+$('#sSave').onclick=()=>{
+  const name=$('#sName').value.trim(); if(!name) return alert('バス停名を入力してください');
+  const data={name,t:{wd:$('#sWd').value,sa:$('#sSa').value,ho:$('#sHo').value}};
+  if(ui.editStop){Object.assign(S.stops.find(x=>x.id===ui.editStop),data)}
+  else{const s={id:uid(),...data};S.stops.push(s);S.curStop=s.id}
+  save();close();renderStops();renderBus();
+};
+$('#sDel').onclick=()=>{if(confirm('このバス停を削除しますか？')){S.stops=S.stops.filter(x=>x.id!==ui.editStop);save();close();renderStops();renderBus()}};
+
+/* ---------- やることリスト ---------- */
+const todayStr=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+function renderTodo(){
+  const show=$('#showDone').checked, td=todayStr();
+  let list=S.todos.filter(t=>show||!t.done);
+  list.sort((a,b)=>(a.done-b.done)||((a.due||'9999')>(b.due||'9999')?1:(a.due||'9999')<(b.due||'9999')?-1:0)||(a.pri>b.pri?1:-1));
+  $('#todoList').innerHTML=list.length?list.map(t=>{
+    const over=t.due&&!t.done&&t.due<td;
+    return `<div class="card todo ${t.done?'done':''}">
+      <span class="pri p${t.pri}">${t.pri}</span>
+      <div class="bd"><div class="t">${esc(t.title)}</div>
+       <div class="meta">${t.cat?`<span>🏷 ${esc(t.cat)}</span>`:''}<span class="${over?'over':''}">${t.due?'📅 '+t.due.slice(5).replace('-','/')+(over?'（期限切れ）':''):'期限なし'}</span></div>
+       ${t.body?`<div class="meta">${esc(t.body).slice(0,60)}</div>`:''}</div>
+      <button class="ic ok" data-ok="${t.id}">${t.done?'↩':'✓'}</button>
+      <button class="ic" data-ed="${t.id}">✎</button></div>`}).join(''):'<div class="empty">タスクはありません。<br>右下の「＋」で追加できます。</div>';
+  $('#catList').innerHTML=[...new Set(S.todos.map(t=>t.cat).filter(Boolean))].map(c=>`<option value="${esc(c)}">`).join('');
+}
+$('#todoList').onclick=e=>{
+  const ok=e.target.closest('[data-ok]'), ed=e.target.closest('[data-ed]');
+  if(ok){const t=S.todos.find(x=>x.id===ok.dataset.ok);t.done=!t.done;save();renderTodo()}
+  if(ed) openTodo(ed.dataset.ed);
+};
+$('#showDone').onchange=renderTodo;
+function setPri(p){ui.pri=p;$$('#priSeg button').forEach(b=>b.classList.toggle('on',b.dataset.p===p))}
+$$('#priSeg button').forEach(b=>b.onclick=()=>setPri(b.dataset.p));
+$('#tDue').oninput=()=>{$('#tNoDue').checked=!$('#tDue').value};
+$('#tNoDue').onchange=()=>{if($('#tNoDue').checked)$('#tDue').value=''};
+function openTodo(id){
+  ui.editTodo=id; const t=S.todos.find(x=>x.id===id)||{title:'',pri:'B',cat:'',body:'',due:''};
+  $('#mTodoT').textContent=id?'タスクを編集':'新規タスク';
+  $('#tTitle').value=t.title;$('#tCat').value=t.cat;$('#tBody').value=t.body;$('#tDue').value=t.due||'';$('#tNoDue').checked=!t.due;
+  setPri(t.pri);$('#tDel').style.display=id?'':'none';open('#mTodo');
+}
+$('#fab').onclick=()=>openTodo(null);
+$('#tSave').onclick=()=>{
+  const title=$('#tTitle').value.trim(); if(!title) return alert('タイトルを入力してください');
+  const d={title,pri:ui.pri,cat:$('#tCat').value.trim(),body:$('#tBody').value,due:$('#tNoDue').checked?'':$('#tDue').value};
+  if(ui.editTodo)Object.assign(S.todos.find(x=>x.id===ui.editTodo),d); else S.todos.push({id:uid(),done:false,...d});
+  save();close();renderTodo();
+};
+$('#tDel').onclick=()=>{if(confirm('削除しますか？')){S.todos=S.todos.filter(x=>x.id!==ui.editTodo);save();close();renderTodo()}};
+
+/* ---------- 設定 ---------- */
+$('#gear').onclick=()=>{$('#gasUrl').value=gas();msg('');open('#mSet')};
+$('#setSave').onclick=()=>{try{localStorage.setItem(URLKEY,$('#gasUrl').value.trim())}catch(e){}msg('保存しました')};
+$('#push').onclick=()=>{try{localStorage.setItem(URLKEY,$('#gasUrl').value.trim())}catch(e){}push()};
+$('#pull').onclick=()=>{try{localStorage.setItem(URLKEY,$('#gasUrl').value.trim())}catch(e){}pull()};
+
+/* ---------- 起動 ---------- */
+function renderAll(){renderStops();renderBus();renderTodo()}
+renderAll();
+if(gas()) pull();
+setInterval(renderBus,30000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)renderBus()});
+</script>
+</body>
+</html>
