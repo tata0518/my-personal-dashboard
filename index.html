@@ -43,6 +43,8 @@ textarea{min-height:90px}
 .todo .t{font-weight:600;word-break:break-all}
 .todo .meta{font-size:12px;color:var(--sub);margin-top:3px;display:flex;gap:6px;flex-wrap:wrap}
 .todo.done .t{text-decoration:line-through;color:var(--sub)}
+.todo{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.todo.drag{position:relative;z-index:5;box-shadow:0 8px 20px #0005;opacity:.95;border-color:var(--pri)}
 .pri{display:inline-block;width:22px;height:22px;line-height:22px;text-align:center;border-radius:6px;color:#fff;font-size:12px;font-weight:700}
 .pA{background:#e11d48}.pB{background:#f59e0b}.pC{background:#64748b}
 .over{color:var(--red);font-weight:700}
@@ -72,7 +74,7 @@ small{color:var(--sub)}
  </section>
  <section class="tab" id="tab-todo">
   <div id="todoList"></div>
-  <label class="row" style="justify-content:center"><input type="checkbox" id="showDone"><small>完了済みも表示</small></label>
+  <div class="row" style="justify-content:center;gap:16px"><label class="row"><input type="checkbox" id="showDone"><small>完了済みも表示</small></label><button class="btn" id="sortBtn"><small>期限順に並べ替え</small></button></div><div style="text-align:center"><small>カードを長押しして上下にドラッグで並べ替え</small></div>
  </section>
 </main>
 <button id="fab">＋</button>
@@ -218,10 +220,9 @@ const todayStr=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMo
 function renderTodo(){
   const show=$('#showDone').checked, td=todayStr();
   let list=S.todos.filter(t=>show||!t.done);
-  list.sort((a,b)=>(a.done-b.done)||((a.due||'9999')>(b.due||'9999')?1:(a.due||'9999')<(b.due||'9999')?-1:0)||(a.pri>b.pri?1:-1));
   $('#todoList').innerHTML=list.length?list.map(t=>{
     const over=t.due&&!t.done&&t.due<td;
-    return `<div class="card todo ${t.done?'done':''}">
+    return `<div class="card todo ${t.done?'done':''}" data-id="${t.id}">
       <span class="pri p${t.pri}">${t.pri}</span>
       <div class="bd"><div class="t">${esc(t.title)}</div>
        <div class="meta">${t.cat?`<span>🏷 ${esc(t.cat)}</span>`:''}<span class="${over?'over':''}">${t.due?'📅 '+t.due.slice(5).replace('-','/')+(over?'（期限切れ）':''):'期限なし'}</span></div>
@@ -254,6 +255,50 @@ $('#tSave').onclick=()=>{
   save();close();renderTodo();
 };
 $('#tDel').onclick=()=>{if(confirm('削除しますか？')){S.todos=S.todos.filter(x=>x.id!==ui.editTodo);save();close();renderTodo()}};
+
+/* ---------- 並べ替え（長押しドラッグ／期限順） ---------- */
+$('#sortBtn').onclick=()=>{
+  if(!confirm('期限→重要度の順に並べ替えます（手動の並びは上書きされます）。よろしいですか？'))return;
+  const k=t=>t.due||'9999';
+  S.todos.sort((a,b)=>(a.done-b.done)||(k(a)>k(b)?1:k(a)<k(b)?-1:0)||(a.pri>b.pri?1:a.pri<b.pri?-1:0));
+  save();renderTodo();
+};
+let dr=null;
+const list=$('#todoList');
+list.addEventListener('contextmenu',e=>e.preventDefault());
+list.addEventListener('pointerdown',e=>{
+  if(e.target.closest('button'))return;
+  const card=e.target.closest('.todo'); if(!card)return;
+  dr={card,x:e.clientX,y:e.clientY,active:false};
+  dr.timer=setTimeout(()=>{dr.active=true;card.classList.add('drag');navigator.vibrate&&navigator.vibrate(20)},450);
+});
+document.addEventListener('pointermove',e=>{
+  if(!dr)return;
+  if(!dr.active){ if(Math.hypot(e.clientX-dr.x,e.clientY-dr.y)>8){clearTimeout(dr.timer);dr=null} return; }
+  const c=dr.card, y=e.clientY, main=$('main');
+  c.style.transform='none';
+  const sibs=[...list.querySelectorAll('.todo')].filter(x=>x!==c);
+  const before=sibs.find(x=>{const r=x.getBoundingClientRect();return y<r.top+r.height/2});
+  before?list.insertBefore(c,before):list.appendChild(c);
+  const r=c.getBoundingClientRect();
+  c.style.transform=`translateY(${y-(r.top+r.height/2)}px)`;
+  if(y<110)main.scrollTop-=10; else if(y>innerHeight-150)main.scrollTop+=10;
+});
+document.addEventListener('touchmove',e=>{if(dr&&dr.active)e.preventDefault()},{passive:false});
+function endDrag(){
+  if(!dr)return; clearTimeout(dr.timer);
+  if(dr.active){
+    dr.card.classList.remove('drag');dr.card.style.transform='';
+    const ids=[...list.querySelectorAll('.todo')].map(x=>x.dataset.id);
+    const slots=[];S.todos.forEach((t,i)=>{if(ids.includes(t.id))slots.push(i)});
+    const map=Object.fromEntries(S.todos.map(t=>[t.id,t]));
+    ids.forEach((id,k)=>S.todos[slots[k]]=map[id]);
+    save();renderTodo();
+  }
+  dr=null;
+}
+document.addEventListener('pointerup',endDrag);
+document.addEventListener('pointercancel',endDrag);
 
 /* ---------- 設定 ---------- */
 $('#gear').onclick=()=>{$('#gasUrl').value=gas();msg('');open('#mSet')};
