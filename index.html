@@ -73,6 +73,14 @@ small{color:var(--sub)}
 .xf b{color:var(--tx)}.xf .btn{padding:3px 10px;font-size:12px;margin-left:auto}
 .xfr{font-size:13px;padding:7px 4px;border-bottom:1px solid var(--line)}
 .okm{color:#16a34a;font-weight:700}.ngm{color:var(--red);font-weight:700}
+.rb{padding:4px 10px;font-size:12px;flex:none}
+input[type=time]{width:100%}
+.row input[type=time]{flex:1}
+#rDD,#rDA{color:var(--red);font-weight:700;margin-left:8px}
+.dist{display:flex;align-items:center;gap:8px;font-size:12px;margin:5px 0}
+.dist .lb{width:7.5em;flex:none}.dist .br{flex:1;height:12px;background:var(--bg);border-radius:6px;overflow:hidden}
+.dist .br i{display:block;height:100%}.dist .n{width:2em;text-align:right;color:var(--sub)}
+[data-rd]{cursor:pointer}
 </style>
 </head>
 <body>
@@ -107,14 +115,30 @@ small{color:var(--sub)}
  <div class="acts" id="bAgainRow"><button class="btn" id="bSave2">保存して続けて登録</button></div>
 </div></div>
 
-<!-- 乗り継ぎ記録モーダル -->
-<div class="mask" id="mXf"><div class="modal">
- <h3 id="xT">乗り継ぎ記録</h3>
- <label>日付</label><input type="date" id="xDate">
- <label>乗り継いだ（乗ろうとした）便</label><select id="xB"></select>
- <label>実際の到着時刻（任意）</label><input type="time" id="xAct">
- <label>メモ（任意）</label><input type="text" id="xMemo" placeholder="例：遅延5分、信号待ち">
- <div class="acts"><button class="btn" data-close>キャンセル</button><button class="btn d" id="xNg">× 乗り遅れ</button><button class="btn p" id="xOk">○ 乗れた</button></div>
+<!-- 記録モーダル -->
+<div class="mask" id="mRec"><div class="modal">
+ <h3 id="rT">記録</h3>
+ <small>入力できる項目だけでOK。同じ日に何度でも追記できます。</small>
+ <label>日付</label><input type="date" id="rDate">
+ <label>実際の発車時刻<span id="rDD"></span></label>
+ <div class="row"><input type="time" id="rAD"><button class="btn" data-now="rAD">今</button></div>
+ <label>実際の到着時刻<span id="rDA"></span></label>
+ <div class="row"><input type="time" id="rAA"><button class="btn" data-now="rAA">今</button></div>
+ <label>混雑状況</label>
+ <select id="rCr"><option value="0">未記録</option><option value="1">空いている</option><option value="2">ふつう</option><option value="3">混雑</option><option value="4">激混み</option></select>
+ <div id="rXBox">
+  <label>乗り換え先の便</label><select id="rXB"></select>
+  <label>乗り換えの結果</label>
+  <select id="rXR"><option value="0">未記録</option><option value="1">スムーズに成功</option><option value="2">少し待ったが成功</option><option value="3">待ち時間が短く失敗</option><option value="4">待ち時間が長すぎて失敗</option></select>
+ </div>
+ <div class="acts"><button class="btn d" id="rDel">削除</button><button class="btn" data-close>キャンセル</button><button class="btn p" id="rSave">保存</button></div>
+</div></div>
+
+<!-- 便の詳細モーダル -->
+<div class="mask" id="mDet"><div class="modal">
+ <h3 id="dT"></h3><div id="dBody"></div>
+ <div class="acts"><button class="btn" id="dEdit">便を編集</button><button class="btn p" id="dRec">記録する</button></div>
+ <div class="acts"><button class="btn" data-close>閉じる</button></div>
 </div></div>
 
 <!-- やること モーダル -->
@@ -146,7 +170,7 @@ const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const uid=()=>Math.random().toString(36).slice(2,10);
 const KEY='myDash.v1', URLKEY='myDash.gas';
-let S={buses:[],xfers:[],todos:[]}, ui={day:null,pri:'B',editStop:null,editTodo:null};
+let S={buses:[],xfers:[],recs:[],todos:[]}, ui={day:null,pri:'B',editStop:null,editTodo:null};
 
 /* ---------- 保存・同期 ---------- */
 try{const r=localStorage.getItem(KEY); if(r) S=Object.assign(S,JSON.parse(r));}catch(e){}
@@ -164,7 +188,7 @@ async function push(){
 async function pull(){
   if(!gas()) return msg('URL未設定');
   try{const r=await fetch(gas()); const d=await r.json();
-    if(d&&(d.stops||d.todos)){S=Object.assign({buses:[],xfers:[],todos:[]},d);try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}renderAll();msg('読み込みました')}
+    if(d&&(d.stops||d.todos)){S=Object.assign({buses:[],xfers:[],recs:[],todos:[]},d);try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}renderAll();msg('読み込みました')}
     else msg('シートにデータがありません');
   }catch(e){msg('読込失敗: '+e.message)}
 }
@@ -189,7 +213,11 @@ const toMin=t=>{const m=/^(\d{1,2}):(\d{2})/.exec(t||'');return m?+m[1]*60+ +m[2
 const fT=t=>(t||'').slice(0,5).replace(/^0/,'');
 const NEXT={o1:'o2',r1:'r2'};
 const XF=()=>(S.xfer===0||S.xfer)?+S.xfer:5;
-const stat=(a,b)=>{const r=S.xfers.filter(x=>x.aId===a&&x.bId===b);return r.length?`実績 ○${r.filter(x=>x.ok).length}/${r.length}`:'実績なし'};
+const CCOL=['','#16a34a','#2563eb','#f59e0b','#e11d48'], XCOL=['','#16a34a','#84cc16','#f59e0b','#e11d48'];
+const XRES_S=['','スムーズ成功','少し待って成功','短すぎて失敗','長すぎて失敗'];
+const dlt=(a,s)=>(a&&s)?toMin(a)-toMin(s):null;
+const sd=d=>d==null?'':(d>0?'+'+d:''+d);
+const stat=(a,b)=>{const r=S.recs.filter(x=>x.busId===a&&x.xBusId===b&&x.xRes>0);return r.length?`実績 ○${r.filter(x=>x.xRes<=2).length}/${r.length}`:'実績なし'};
 const byDep=l=>l.slice().sort((p,q)=>toMin(p.dep)-toMin(q.dep));
 function cand(b){
   const nl=NEXT[b.leg], am=toMin(b.arr); if(!nl||am===null) return null;
@@ -202,23 +230,19 @@ function renderBus(f=true){
   const list=byDep(S.buses.filter(b=>b.leg===ui.leg));
   const now=new Date(), nm=now.getHours()*60+now.getMinutes();
   const nx=list.find(b=>toMin(b.dep)>=nm);
-  let h=`<div class="route"><b>${L.f}</b> → <b>${L.t}</b></div>`;
+  let h=`<div class="route"><b>${L.f}</b> → <b>${L.t}</b>　<small>タップで記録の概要</small></div>`;
   if(!list.length) h+='<div class="empty">便が未登録です。<br>右下の「＋」から登録してください。</div>';
   else{
     h+=nx?`<div class="next">次の便 <b>${fT(nx.dep)}</b>　あと${toMin(nx.dep)-nm}分</div>`:'<div class="next">本日の便は終了しました</div>';
     h+=list.map(b=>{
       let xf='';
       if(NEXT[b.leg]&&b.arr){
-        const c=cand(b), btn=`<button class="btn" data-xf="${b.id}">記録</button>`;
-        xf=c?`<div class="xf">🔁 <b>${fT(c.dep)}</b>発に接続可（待ち${toMin(c.dep)-toMin(b.arr)}分）　${stat(b.id,c.id)}${btn}</div>`
-            :`<div class="xf">🔁 乗継可能な便なし（乗換${XF()}分）${btn}</div>`;
+        const c=cand(b);
+        xf=c?`<div class="xf">🔁 <b>${fT(c.dep)}</b>発に接続可（待ち${toMin(c.dep)-toMin(b.arr)}分）　${stat(b.id,c.id)}</div>`
+            :`<div class="xf">🔁 乗継可能な便なし（乗換${XF()}分）</div>`;
       }
-      return `<div class="busw ${toMin(b.dep)<nm?'past':''}"><div class="bus" data-id="${b.id}"><span class="tm ${nx&&nx.id===b.id?'nx':''}">${fT(b.dep)}</span><span class="ar">→</span><span class="tm2">${fT(b.arr)||'--'}</span>${+b.crowd>0?`<span class="cr c${b.crowd}">${CROWD[b.crowd]}</span>`:''}<span class="nt">${esc(b.note)}</span></div>${xf}</div>`;
+      return `<div class="busw ${toMin(b.dep)<nm?'past':''}"><div class="bus" data-id="${b.id}"><span class="tm ${nx&&nx.id===b.id?'nx':''}">${fT(b.dep)}</span><span class="ar">→</span><span class="tm2">${fT(b.arr)||'--'}</span>${+b.crowd>0?`<span class="cr c${b.crowd}">${CROWD[b.crowd]}</span>`:''}<span class="nt">${esc(b.note)}</span><button class="btn rb" data-rec="${b.id}">記録</button></div>${xf}</div>`;
     }).join('');
-  }
-  if(NEXT[ui.leg]){
-    const rs=S.xfers.filter(x=>x.leg===ui.leg).sort((a,b)=>b.ts-a.ts).slice(0,8);
-    if(rs.length) h+='<div class="route" style="margin-top:16px">最近の乗り継ぎ記録（タップで削除）</div>'+rs.map(x=>`<div class="xfr" data-xr="${x.id}">${x.date.slice(5).replace('-','/')} <span class="${x.ok?'okm':'ngm'}">${x.ok?'○':'×'}</span> ①着${fT(x.aArr)}${x.actual?'（実'+fT(x.actual)+'）':''} → ②${fT(x.bDep)}発 ${esc(x.memo)}</div>`).join('');
   }
   $('#busBody').innerHTML=h;
   const id=nx?nx.id:null; if(f||ui.lastNx!==id) scrollNext(); ui.lastNx=id;
@@ -226,24 +250,97 @@ function renderBus(f=true){
 function scrollNext(){setTimeout(()=>{const e=$('.tm.nx');if(e&&$('#tab-bus').classList.contains('on'))e.scrollIntoView({block:'center',behavior:'smooth'})},80)}
 $('#legSeg').onclick=e=>{const b=e.target.closest('button');if(b){ui.leg=b.dataset.l;renderBus()}};
 $('#busBody').onclick=e=>{
-  const x=e.target.closest('[data-xf]'); if(x) return openXf(x.dataset.xf);
-  const d=e.target.closest('[data-xr]'); if(d){if(confirm('この記録を削除しますか？')){S.xfers=S.xfers.filter(r=>r.id!==d.dataset.xr);save();renderBus(false)}return}
-  const r=e.target.closest('.bus'); if(r) openBus(r.dataset.id);
+  const x=e.target.closest('[data-rec]'); if(x) return openRec(x.dataset.rec);
+  const r=e.target.closest('.bus'); if(r) openDet(r.dataset.id);
 };
-function openXf(aId){
-  const a=S.buses.find(x=>x.id===aId), nl=NEXT[a.leg], bs=byDep(S.buses.filter(x=>x.leg===nl));
-  if(!bs.length) return alert('先に'+LEGS[nl].n+'の便を登録してください');
-  ui.xfA=aId; const c=cand(a)||bs[0];
-  $('#xT').textContent=LEGS[a.leg].n+' '+fT(a.dep)+'→'+fT(a.arr)+' の乗り継ぎ';
-  $('#xB').innerHTML=bs.map(b=>`<option value="${b.id}">${LEGS[nl].n} ${fT(b.dep)}発</option>`).join('');
-  $('#xB').value=c.id; $('#xDate').value=todayStr(); $('#xAct').value=''; $('#xMemo').value=''; open('#mXf');
+
+/* 記録 */
+const recsOf=id=>S.recs.filter(r=>r.busId===id).sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:a.ts-b.ts);
+const recFind=(id,d)=>S.recs.find(r=>r.busId===id&&r.date===d);
+function openRec(id,date,fromDet){
+  const b=S.buses.find(x=>x.id===id); if(!b) return;
+  ui.recBus=id; ui.reopen=fromDet?id:null;
+  $('#rT').textContent=LEGS[b.leg].n+' '+fT(b.dep)+(b.arr?'→'+fT(b.arr):'')+' の記録';
+  $('#rDate').value=date||todayStr();
+  const nl=NEXT[b.leg]; ui.recX=!!nl; $('#rXBox').style.display=nl?'':'none';
+  if(nl){
+    const bs=byDep(S.buses.filter(x=>x.leg===nl)), c=cand(b)||bs[0];
+    $('#rXB').innerHTML=bs.length?bs.map(x=>`<option value="${x.id}">${LEGS[nl].n} ${fT(x.dep)}発</option>`).join(''):`<option value="">（${LEGS[nl].n}の便が未登録）</option>`;
+    if(c) $('#rXB').value=c.id;
+  }
+  fillRec(); open('#mRec');
 }
-function saveXf(ok){
-  const a=S.buses.find(x=>x.id===ui.xfA), bid=$('#xB').value, b=S.buses.find(x=>x.id===bid);
-  S.xfers.push({id:uid(),ts:Date.now(),leg:a.leg,date:$('#xDate').value||todayStr(),aId:a.id,bId:bid,aArr:a.arr,bDep:b.dep,actual:$('#xAct').value,memo:$('#xMemo').value.trim(),ok});
-  save();close();renderBus(false);
+function fillRec(){
+  const r=recFind(ui.recBus,$('#rDate').value)||{};
+  $('#rAD').value=r.actDep||''; $('#rAA').value=r.actArr||''; $('#rCr').value=r.crowd||0; $('#rXR').value=r.xRes||0;
+  if(r.xBusId) $('#rXB').value=r.xBusId;
+  $('#rDel').style.display=r.id?'':'none'; calcRec();
 }
-$('#xOk').onclick=()=>saveXf(true); $('#xNg').onclick=()=>saveXf(false);
+function calcRec(){
+  const b=S.buses.find(x=>x.id===ui.recBus); if(!b) return;
+  const f=(a,s)=>{const d=dlt(a,s);return d===null?'':d>0?'　＋'+d+'分遅れ':d<0?'　'+(-d)+'分早い':'　定刻'};
+  $('#rDD').textContent=f($('#rAD').value,b.dep); $('#rDA').textContent=f($('#rAA').value,b.arr);
+}
+$('#rDate').onchange=fillRec; $('#rAD').oninput=calcRec; $('#rAA').oninput=calcRec;
+$('#mRec').addEventListener('click',e=>{
+  const n=e.target.closest('[data-now]'); if(!n) return;
+  const d=new Date(); $('#'+n.dataset.now).value=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); calcRec();
+});
+function afterRec(){save();close();renderBus(false);if(ui.reopen)openDet(ui.reopen)}
+$('#rSave').onclick=()=>{
+  const b=S.buses.find(x=>x.id===ui.recBus), date=$('#rDate').value||todayStr();
+  const ad=$('#rAD').value, aa=$('#rAA').value, cr=+$('#rCr').value, xr=ui.recX?+$('#rXR').value:0;
+  if(!ad&&!aa&&!cr&&!xr) return alert('いずれか1つ以上入力してください');
+  const d={date,busId:b.id,leg:b.leg,actDep:ad,actArr:aa,dd:dlt(ad,b.dep),da:dlt(aa,b.arr),crowd:cr,xBusId:xr?$('#rXB').value:'',xRes:xr};
+  const ex=recFind(b.id,date); if(ex) Object.assign(ex,d); else S.recs.push({id:uid(),ts:Date.now(),...d});
+  afterRec();
+};
+$('#rDel').onclick=()=>{if(confirm('この日の記録を削除しますか？')){S.recs=S.recs.filter(r=>!(r.busId===ui.recBus&&r.date===$('#rDate').value));afterRec()}};
+
+/* 便の詳細（グラフ） */
+function delayChart(rs){
+  const d=rs.filter(r=>r.dd!=null||r.da!=null).slice(-14); if(!d.length) return '';
+  const m=Math.max(3,...d.flatMap(r=>[Math.abs(r.dd||0),Math.abs(r.da||0)]));
+  const W=320,H=140,z=70,k=52/m,st=(W-20)/d.length,bw=Math.min(12,st/2.6);
+  let s=`<div class="route" style="margin-top:10px">遅れ（分）　<span style="color:var(--pri)">■発車</span> <span style="color:#f59e0b">■到着</span></div><svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block"><line x1="10" x2="${W-10}" y1="${z}" y2="${z}" stroke="var(--line)"/>`;
+  d.forEach((r,i)=>{
+    const cx=10+st*i+st/2;
+    [[r.dd,-bw,'var(--pri)'],[r.da,0,'#f59e0b']].forEach(([v,o,c])=>{
+      if(v==null) return; const h=Math.abs(v)*k||1;
+      s+=`<rect x="${cx+o}" y="${v>=0?z-h:z}" width="${bw}" height="${h}" fill="${c}" rx="2"/><text x="${cx+o+bw/2}" y="${v>=0?z-h-2:z+h+9}" font-size="8" text-anchor="middle" fill="var(--sub)">${sd(v)}</text>`;
+    });
+    s+=`<text x="${cx}" y="${H-4}" font-size="9" text-anchor="middle" fill="var(--sub)">${d.length<=8?r.date.slice(5).replace('-','/'):r.date.slice(8)}</text>`;
+  });
+  return s+'</svg>';
+}
+function distBlock(t,rows){
+  const mx=Math.max(...rows.map(r=>r[1])); if(!mx) return '';
+  return `<div class="route" style="margin-top:12px">${t}</div>`+rows.map(([l,n,c])=>`<div class="dist"><span class="lb">${l}</span><span class="br"><i style="width:${n/mx*100}%;background:${c}"></i></span><span class="n">${n}</span></div>`).join('');
+}
+function openDet(id){
+  const b=S.buses.find(x=>x.id===id); if(!b) return; ui.det=id;
+  const L=LEGS[b.leg], rs=recsOf(id);
+  $('#dT').textContent=L.n+' '+fT(b.dep)+(b.arr?' → '+fT(b.arr):'');
+  let h=`<div class="route">${L.f} → ${L.t}${+b.crowd>0?'　混雑予想：'+CROWD[b.crowd]:''}${b.note?'　'+esc(b.note):''}</div>`;
+  if(!rs.length) h+='<div class="empty">まだ記録がありません。<br>「記録する」から少しずつ入力できます。</div>';
+  else{
+    const avg=k=>{const v=rs.map(r=>r[k]).filter(v=>v!=null);return v.length?v.reduce((a,c)=>a+c,0)/v.length:null};
+    const sg=v=>v===null?'--':(v>0?'＋':'')+v.toFixed(1)+'分';
+    h+=`<div class="card" style="margin:0 0 8px"><b>${rs.length}件</b>の記録<br>平均の遅れ　発車 ${sg(avg('dd'))}　到着 ${sg(avg('da'))}</div>`;
+    h+=delayChart(rs);
+    h+=distBlock('混雑状況',[1,2,3,4].map(i=>[CROWD[i],rs.filter(r=>r.crowd===i).length,CCOL[i]]));
+    if(NEXT[b.leg]){
+      const xs=rs.filter(r=>r.xRes>0), ok=xs.filter(r=>r.xRes<=2).length;
+      h+=distBlock('乗り継ぎ結果'+(xs.length?`（成功率 ${Math.round(ok/xs.length*100)}%）`:''),[1,2,3,4].map(i=>[XRES_S[i],xs.filter(r=>r.xRes===i).length,XCOL[i]]));
+    }
+    h+='<div class="route" style="margin-top:14px">記録一覧（タップで編集）</div>'+rs.slice().reverse().slice(0,10).map(r=>`<div class="xfr" data-rd="${r.date}">${r.date.slice(5).replace('-','/')}　発${r.actDep?fT(r.actDep)+'('+sd(r.dd)+')':'--'} 着${r.actArr?fT(r.actArr)+'('+sd(r.da)+')':'--'}${r.crowd?`　<span class="cr c${r.crowd}">${CROWD[r.crowd]}</span>`:''}${r.xRes?`　<span class="${r.xRes<=2?'okm':'ngm'}">${XRES_S[r.xRes]}</span>`:''}</div>`).join('');
+  }
+  $('#dBody').innerHTML=h; open('#mDet');
+}
+$('#dBody').onclick=e=>{const r=e.target.closest('[data-rd]');if(r){close();openRec(ui.det,r.dataset.rd,true)}};
+$('#dRec').onclick=()=>{close();openRec(ui.det,null,true)};
+$('#dEdit').onclick=()=>{close();openBus(ui.det)};
+
 function openBus(id,keep){
   ui.editBus=id; const L=LEGS[ui.leg], b=S.buses.find(x=>x.id===id)||{dep:'',arr:'',crowd:0,note:''};
   $('#mBusT').textContent=L.n+(id?'の便を編集':'の便を登録');
@@ -261,7 +358,7 @@ function saveBus(again){
 }
 $('#bSave').onclick=()=>saveBus(false);
 $('#bSave2').onclick=()=>saveBus(true);
-$('#bDel').onclick=()=>{if(confirm('この便を削除しますか？')){S.buses=S.buses.filter(x=>x.id!==ui.editBus);save();close();renderBus(false)}};
+$('#bDel').onclick=()=>{if(confirm('この便と記録を削除しますか？')){S.buses=S.buses.filter(x=>x.id!==ui.editBus);S.recs=S.recs.filter(r=>r.busId!==ui.editBus);save();close();renderBus(false)}};
 
 /* ---------- やることリスト ---------- */
 const todayStr=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
@@ -355,7 +452,14 @@ $('#push').onclick=()=>{try{localStorage.setItem(URLKEY,$('#gasUrl').value.trim(
 $('#pull').onclick=()=>{try{localStorage.setItem(URLKEY,$('#gasUrl').value.trim())}catch(e){}pull()};
 
 /* ---------- 起動 ---------- */
-function renderAll(){renderBus();renderTodo()}
+function migrate(){
+  if(!S.recs)S.recs=[];
+  if(S.xfers&&S.xfers.length&&!S.recs.length){
+    S.recs=S.xfers.map(x=>({id:uid(),ts:x.ts||0,date:x.date,busId:x.aId,leg:x.leg,actDep:'',actArr:x.actual||'',dd:null,da:null,crowd:0,xBusId:x.bId,xRes:x.ok?1:3}));
+    S.xfers=[]; save();
+  }
+}
+function renderAll(){migrate();renderBus();renderTodo()}
 renderAll();
 if(gas()) pull();
 setInterval(()=>renderBus(false),30000);
