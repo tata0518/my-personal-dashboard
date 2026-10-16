@@ -50,8 +50,7 @@ textarea{min-height:90px}
 .over{color:var(--red);font-weight:700}
 .ic{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--bg);font-size:16px;color:var(--tx)}
 .ic.ok{color:#16a34a}
-#fab{position:fixed;right:18px;bottom:calc(76px + env(safe-area-inset-bottom));width:56px;height:56px;border-radius:50%;border:0;background:var(--pri);color:#fff;font-size:30px;box-shadow:0 4px 12px #0004;display:none}
-body.todo-on #fab{display:block}
+#fab{position:fixed;right:18px;bottom:calc(76px + env(safe-area-inset-bottom));width:56px;height:56px;border-radius:50%;border:0;background:var(--pri);color:#fff;font-size:30px;box-shadow:0 4px 12px #0004}
 .mask{position:fixed;inset:0;background:#0007;display:none;align-items:flex-end;justify-content:center;z-index:10}
 .mask.on{display:flex}
 .modal{background:var(--card);width:100%;max-width:520px;max-height:92%;overflow-y:auto;border-radius:16px 16px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
@@ -59,6 +58,21 @@ body.todo-on #fab{display:block}
 .modal label{display:block;font-size:12px;color:var(--sub);margin:10px 0 4px}
 .modal .acts{display:flex;gap:8px;margin-top:16px}.modal .acts .btn{flex:1}
 small{color:var(--sub)}
+
+.route{font-size:14px;color:var(--sub);margin:4px 0 8px}.route b{color:var(--tx)}
+.bus{display:flex;align-items:center;gap:8px;padding:10px 4px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+.bus.past{opacity:.45}
+.tm{font-size:20px;font-weight:700;padding:2px 12px;border:2px solid transparent;border-radius:999px}
+.tm.nx{border-color:var(--red);color:var(--red);font-size:24px}
+.ar{color:var(--sub)}.tm2{font-size:17px}
+.cr{font-size:11px;padding:2px 7px;border-radius:10px;color:#fff;white-space:nowrap}
+.c1{background:#16a34a}.c2{background:#2563eb}.c3{background:#f59e0b}.c4{background:#e11d48}
+.nt{flex:1;font-size:12px;color:var(--sub);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right}
+.busw{border-bottom:1px solid var(--line)}.busw .bus{border-bottom:0}.busw.past{opacity:.45}
+.xf{font-size:12px;color:var(--sub);padding:0 4px 9px 16px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.xf b{color:var(--tx)}.xf .btn{padding:3px 10px;font-size:12px;margin-left:auto}
+.xfr{font-size:13px;padding:7px 4px;border-bottom:1px solid var(--line)}
+.okm{color:#16a34a;font-weight:700}.ngm{color:var(--red);font-weight:700}
 </style>
 </head>
 <body>
@@ -67,8 +81,7 @@ small{color:var(--sub)}
  <section class="tab on" id="tab-bus">
   <div class="card"><a class="link" target="_blank" rel="noopener" href="https://www.kotsu.metro.tokyo.jp/bus/unkou/">🔗 都営バス 運行情報を見る</a></div>
   <div class="card">
-   <div class="row"><select id="stopSel"></select><button class="btn" id="stopEdit">編集</button><button class="btn p" id="stopAdd">＋</button></div>
-   <div class="seg" id="daySeg"><button data-d="wd">平日</button><button data-d="sa">土曜</button><button data-d="ho">日祝</button></div>
+   <div class="seg" id="legSeg"><button data-l="o1">行き①</button><button data-l="o2">行き②</button><button data-l="r1">帰り①</button><button data-l="r2">帰り②</button></div>
    <div id="busBody"></div>
   </div>
  </section>
@@ -83,15 +96,25 @@ small{color:var(--sub)}
  <button data-t="todo"><span>✅</span>やること</button>
 </nav>
 
-<!-- バス停モーダル -->
-<div class="mask" id="mStop"><div class="modal">
- <h3 id="mStopT">バス停の登録</h3>
- <label>バス停名・系統（例：渋谷駅前 都01）</label><input type="text" id="sName">
- <label>平日の時刻</label><textarea id="sWd" placeholder="5:30 6:05 6:40 ... (スペース・改行・カンマ区切り)"></textarea>
- <label>土曜の時刻</label><textarea id="sSa"></textarea>
- <label>日祝の時刻</label><textarea id="sHo"></textarea>
- <small>「H:MM」形式。コピペでOK。時台ごとに自動で並びます。</small>
- <div class="acts"><button class="btn d" id="sDel">削除</button><button class="btn" data-close>キャンセル</button><button class="btn p" id="sSave">保存</button></div>
+<!-- 便モーダル -->
+<div class="mask" id="mBus"><div class="modal">
+ <h3 id="mBusT">便の登録</h3>
+ <label id="bDepL">発車時刻</label><input type="time" id="bDep">
+ <label id="bArrL">到着時刻</label><input type="time" id="bArr">
+ <label>混雑予想</label><select id="bCrowd"><option value="0">未設定</option><option value="1">空いている</option><option value="2">ふつう</option><option value="3">混雑</option><option value="4">激混み</option></select>
+ <label>備考</label><input type="text" id="bNote">
+ <div class="acts"><button class="btn d" id="bDel">削除</button><button class="btn" data-close>キャンセル</button><button class="btn p" id="bSave">保存</button></div>
+ <div class="acts" id="bAgainRow"><button class="btn" id="bSave2">保存して続けて登録</button></div>
+</div></div>
+
+<!-- 乗り継ぎ記録モーダル -->
+<div class="mask" id="mXf"><div class="modal">
+ <h3 id="xT">乗り継ぎ記録</h3>
+ <label>日付</label><input type="date" id="xDate">
+ <label>乗り継いだ（乗ろうとした）便</label><select id="xB"></select>
+ <label>実際の到着時刻（任意）</label><input type="time" id="xAct">
+ <label>メモ（任意）</label><input type="text" id="xMemo" placeholder="例：遅延5分、信号待ち">
+ <div class="acts"><button class="btn" data-close>キャンセル</button><button class="btn d" id="xNg">× 乗り遅れ</button><button class="btn p" id="xOk">○ 乗れた</button></div>
 </div></div>
 
 <!-- やること モーダル -->
@@ -112,6 +135,7 @@ small{color:var(--sub)}
  <h3>⚙️ Googleスプレッドシート同期</h3>
  <small>Apps ScriptのウェブアプリURLを入れると、変更のたびに自動保存し、起動時に読み込みます。空欄ならこの端末内（localStorage）のみ。</small>
  <label>Apps Script URL</label><input type="text" id="gasUrl" placeholder="https://script.google.com/macros/s/.../exec">
+ <label>乗り換え所要時間（分）</label><input type="text" inputmode="numeric" id="xfMin">
  <div id="syncMsg"><small></small></div>
  <div class="acts"><button class="btn" id="pull">読込</button><button class="btn" id="push">送信</button><button class="btn p" id="setSave">保存</button></div>
  <div class="acts"><button class="btn" data-close>閉じる</button></div>
@@ -122,7 +146,7 @@ const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const uid=()=>Math.random().toString(36).slice(2,10);
 const KEY='myDash.v1', URLKEY='myDash.gas';
-let S={stops:[],todos:[],curStop:null}, ui={day:null,pri:'B',editStop:null,editTodo:null};
+let S={buses:[],xfers:[],todos:[]}, ui={day:null,pri:'B',editStop:null,editTodo:null};
 
 /* ---------- 保存・同期 ---------- */
 try{const r=localStorage.getItem(KEY); if(r) S=Object.assign(S,JSON.parse(r));}catch(e){}
@@ -140,7 +164,7 @@ async function push(){
 async function pull(){
   if(!gas()) return msg('URL未設定');
   try{const r=await fetch(gas()); const d=await r.json();
-    if(d&&(d.stops||d.todos)){S=Object.assign({stops:[],todos:[],curStop:null},d);try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}renderAll();msg('読み込みました')}
+    if(d&&(d.stops||d.todos)){S=Object.assign({buses:[],xfers:[],todos:[]},d);try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}renderAll();msg('読み込みました')}
     else msg('シートにデータがありません');
   }catch(e){msg('読込失敗: '+e.message)}
 }
@@ -159,61 +183,85 @@ $$('nav button').forEach(b=>b.onclick=()=>{
 });
 
 /* ---------- バス時刻表 ---------- */
-const DN={wd:'平日',sa:'土曜',ho:'日祝'};
-const todayDay=()=>{const d=new Date().getDay();return d===0?'ho':d===6?'sa':'wd'};
-const toMin=t=>{const m=t.match(/^(\d{1,2}):(\d{2})$/);return m?+m[1]*60+ +m[2]:null};
-function parseTimes(txt){
-  const out=new Set();
-  (txt.match(/\d{1,2}[:：]\d{2}/g)||[]).forEach(t=>{t=t.replace('：',':');const m=toMin(t);if(m!==null&&m<1700)out.add(m)});
-  return [...out].sort((a,b)=>a-b);
+const LEGS={o1:{n:'行き①',f:'野方駅南口',t:'王子駅前'},o2:{n:'行き②',f:'王子駅前',t:'堀船'},r1:{n:'帰り①',f:'堀船',t:'王子駅前'},r2:{n:'帰り②',f:'王子駅前',t:'野方駅南口'}};
+const CROWD=['','空いている','ふつう','混雑','激混み'];
+const toMin=t=>{const m=/^(\d{1,2}):(\d{2})/.exec(t||'');return m?+m[1]*60+ +m[2]:null};
+const fT=t=>(t||'').slice(0,5).replace(/^0/,'');
+const NEXT={o1:'o2',r1:'r2'};
+const XF=()=>(S.xfer===0||S.xfer)?+S.xfer:5;
+const stat=(a,b)=>{const r=S.xfers.filter(x=>x.aId===a&&x.bId===b);return r.length?`実績 ○${r.filter(x=>x.ok).length}/${r.length}`:'実績なし'};
+const byDep=l=>l.slice().sort((p,q)=>toMin(p.dep)-toMin(q.dep));
+function cand(b){
+  const nl=NEXT[b.leg], am=toMin(b.arr); if(!nl||am===null) return null;
+  return byDep(S.buses.filter(x=>x.leg===nl)).find(x=>toMin(x.dep)>=am+XF())||false;
 }
-const fmtT=m=>Math.floor(m/60)+':'+String(m%60).padStart(2,'0');
-function renderStops(){
-  const sel=$('#stopSel');
-  sel.innerHTML=S.stops.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('')||'<option>（未登録）</option>';
-  if(!S.stops.find(s=>s.id===S.curStop)) S.curStop=S.stops[0]?.id||null;
-  sel.value=S.curStop||'';
-  $('#stopEdit').style.display=S.stops.length?'':'none';
-}
-function renderBus(){
-  ui.day=ui.day||todayDay();
-  $$('#daySeg button').forEach(b=>b.classList.toggle('on',b.dataset.d===ui.day));
-  const st=S.stops.find(s=>s.id===S.curStop), box=$('#busBody');
-  if(!st){box.innerHTML='<div class="empty">バス停が未登録です。<br>右上の「＋」から時刻表を入力してください。</div>';return}
-  const times=parseTimes((st.t||{})[ui.day]||'');
-  if(!times.length){box.innerHTML=`<div class="empty">${DN[ui.day]}の時刻が未入力です。<br>「編集」から入力してください。</div>`;return}
+function renderBus(f=true){
+  ui.leg=ui.leg||(new Date().getHours()<12?'o1':'r1');
+  $$('#legSeg button').forEach(b=>b.classList.toggle('on',b.dataset.l===ui.leg));
+  const L=LEGS[ui.leg];
+  const list=byDep(S.buses.filter(b=>b.leg===ui.leg));
   const now=new Date(), nm=now.getHours()*60+now.getMinutes();
-  const isToday=ui.day===todayDay();
-  const nx=isToday?times.find(t=>t>=nm):null;
-  let head='';
-  if(isToday) head=nx!=null?`<div class="next">次のバス <b>${fmtT(nx)}</b>　あと${nx-nm}分</div>`:'<div class="next">本日の運行は終了しました</div>';
-  const byH={}; times.forEach(t=>(byH[Math.floor(t/60)]??=[]).push(t));
-  let g='<div class="tt">';
-  Object.keys(byH).forEach(h=>{
-    g+=`<div class="h">${h}</div><div class="m">`+byH[h].map(t=>`<span class="${isToday&&t<nm?'past':''} ${t===nx?'nx':''}" ${t===nx?'id="nxEl"':''}>${String(t%60).padStart(2,'0')}</span>`).join('')+'</div>';
-  });
-  box.innerHTML=head+g+'</div>';
-  scrollNext();
+  const nx=list.find(b=>toMin(b.dep)>=nm);
+  let h=`<div class="route"><b>${L.f}</b> → <b>${L.t}</b></div>`;
+  if(!list.length) h+='<div class="empty">便が未登録です。<br>右下の「＋」から登録してください。</div>';
+  else{
+    h+=nx?`<div class="next">次の便 <b>${fT(nx.dep)}</b>　あと${toMin(nx.dep)-nm}分</div>`:'<div class="next">本日の便は終了しました</div>';
+    h+=list.map(b=>{
+      let xf='';
+      if(NEXT[b.leg]&&b.arr){
+        const c=cand(b), btn=`<button class="btn" data-xf="${b.id}">記録</button>`;
+        xf=c?`<div class="xf">🔁 <b>${fT(c.dep)}</b>発に接続可（待ち${toMin(c.dep)-toMin(b.arr)}分）　${stat(b.id,c.id)}${btn}</div>`
+            :`<div class="xf">🔁 乗継可能な便なし（乗換${XF()}分）${btn}</div>`;
+      }
+      return `<div class="busw ${toMin(b.dep)<nm?'past':''}"><div class="bus" data-id="${b.id}"><span class="tm ${nx&&nx.id===b.id?'nx':''}">${fT(b.dep)}</span><span class="ar">→</span><span class="tm2">${fT(b.arr)||'--'}</span>${+b.crowd>0?`<span class="cr c${b.crowd}">${CROWD[b.crowd]}</span>`:''}<span class="nt">${esc(b.note)}</span></div>${xf}</div>`;
+    }).join('');
+  }
+  if(NEXT[ui.leg]){
+    const rs=S.xfers.filter(x=>x.leg===ui.leg).sort((a,b)=>b.ts-a.ts).slice(0,8);
+    if(rs.length) h+='<div class="route" style="margin-top:16px">最近の乗り継ぎ記録（タップで削除）</div>'+rs.map(x=>`<div class="xfr" data-xr="${x.id}">${x.date.slice(5).replace('-','/')} <span class="${x.ok?'okm':'ngm'}">${x.ok?'○':'×'}</span> ①着${fT(x.aArr)}${x.actual?'（実'+fT(x.actual)+'）':''} → ②${fT(x.bDep)}発 ${esc(x.memo)}</div>`).join('');
+  }
+  $('#busBody').innerHTML=h;
+  const id=nx?nx.id:null; if(f||ui.lastNx!==id) scrollNext(); ui.lastNx=id;
 }
-function scrollNext(){setTimeout(()=>{const e=$('#nxEl');if(e&&$('#tab-bus').classList.contains('on'))e.scrollIntoView({block:'center',behavior:'smooth'})},80)}
-$('#stopSel').onchange=e=>{S.curStop=e.target.value;save();renderBus()};
-$$('#daySeg button').forEach(b=>b.onclick=()=>{ui.day=b.dataset.d;renderBus()});
-function openStop(id){
-  ui.editStop=id; const s=S.stops.find(x=>x.id===id)||{name:'',t:{}};
-  $('#mStopT').textContent=id?'バス停の編集':'バス停の登録';
-  $('#sName').value=s.name; $('#sWd').value=s.t?.wd||''; $('#sSa').value=s.t?.sa||''; $('#sHo').value=s.t?.ho||'';
-  $('#sDel').style.display=id?'':'none'; open('#mStop');
-}
-$('#stopAdd').onclick=()=>openStop(null);
-$('#stopEdit').onclick=()=>openStop(S.curStop);
-$('#sSave').onclick=()=>{
-  const name=$('#sName').value.trim(); if(!name) return alert('バス停名を入力してください');
-  const data={name,t:{wd:$('#sWd').value,sa:$('#sSa').value,ho:$('#sHo').value}};
-  if(ui.editStop){Object.assign(S.stops.find(x=>x.id===ui.editStop),data)}
-  else{const s={id:uid(),...data};S.stops.push(s);S.curStop=s.id}
-  save();close();renderStops();renderBus();
+function scrollNext(){setTimeout(()=>{const e=$('.tm.nx');if(e&&$('#tab-bus').classList.contains('on'))e.scrollIntoView({block:'center',behavior:'smooth'})},80)}
+$('#legSeg').onclick=e=>{const b=e.target.closest('button');if(b){ui.leg=b.dataset.l;renderBus()}};
+$('#busBody').onclick=e=>{
+  const x=e.target.closest('[data-xf]'); if(x) return openXf(x.dataset.xf);
+  const d=e.target.closest('[data-xr]'); if(d){if(confirm('この記録を削除しますか？')){S.xfers=S.xfers.filter(r=>r.id!==d.dataset.xr);save();renderBus(false)}return}
+  const r=e.target.closest('.bus'); if(r) openBus(r.dataset.id);
 };
-$('#sDel').onclick=()=>{if(confirm('このバス停を削除しますか？')){S.stops=S.stops.filter(x=>x.id!==ui.editStop);save();close();renderStops();renderBus()}};
+function openXf(aId){
+  const a=S.buses.find(x=>x.id===aId), nl=NEXT[a.leg], bs=byDep(S.buses.filter(x=>x.leg===nl));
+  if(!bs.length) return alert('先に'+LEGS[nl].n+'の便を登録してください');
+  ui.xfA=aId; const c=cand(a)||bs[0];
+  $('#xT').textContent=LEGS[a.leg].n+' '+fT(a.dep)+'→'+fT(a.arr)+' の乗り継ぎ';
+  $('#xB').innerHTML=bs.map(b=>`<option value="${b.id}">${LEGS[nl].n} ${fT(b.dep)}発</option>`).join('');
+  $('#xB').value=c.id; $('#xDate').value=todayStr(); $('#xAct').value=''; $('#xMemo').value=''; open('#mXf');
+}
+function saveXf(ok){
+  const a=S.buses.find(x=>x.id===ui.xfA), bid=$('#xB').value, b=S.buses.find(x=>x.id===bid);
+  S.xfers.push({id:uid(),ts:Date.now(),leg:a.leg,date:$('#xDate').value||todayStr(),aId:a.id,bId:bid,aArr:a.arr,bDep:b.dep,actual:$('#xAct').value,memo:$('#xMemo').value.trim(),ok});
+  save();close();renderBus(false);
+}
+$('#xOk').onclick=()=>saveXf(true); $('#xNg').onclick=()=>saveXf(false);
+function openBus(id,keep){
+  ui.editBus=id; const L=LEGS[ui.leg], b=S.buses.find(x=>x.id===id)||{dep:'',arr:'',crowd:0,note:''};
+  $('#mBusT').textContent=L.n+(id?'の便を編集':'の便を登録');
+  $('#bDepL').textContent='発車時刻（'+L.f+'）'; $('#bArrL').textContent='到着時刻（'+L.t+'）';
+  $('#bDep').value=b.dep; $('#bArr').value=b.arr; $('#bCrowd').value=b.crowd||0; $('#bNote').value=b.note||'';
+  $('#bDel').style.display=id?'':'none'; $('#bAgainRow').style.display=id?'none':'';
+  open('#mBus');
+}
+function saveBus(again){
+  const dep=$('#bDep').value; if(!dep) return alert('発車時刻を入力してください');
+  const d={dep,arr:$('#bArr').value,crowd:+$('#bCrowd').value,note:$('#bNote').value.trim()};
+  if(ui.editBus)Object.assign(S.buses.find(x=>x.id===ui.editBus),d); else S.buses.push({id:uid(),leg:ui.leg,...d});
+  save(); renderBus(false);
+  if(again){openBus(null);$('#bDep').focus()} else close();
+}
+$('#bSave').onclick=()=>saveBus(false);
+$('#bSave2').onclick=()=>saveBus(true);
+$('#bDel').onclick=()=>{if(confirm('この便を削除しますか？')){S.buses=S.buses.filter(x=>x.id!==ui.editBus);save();close();renderBus(false)}};
 
 /* ---------- やることリスト ---------- */
 const todayStr=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
@@ -247,7 +295,7 @@ function openTodo(id){
   $('#tTitle').value=t.title;$('#tCat').value=t.cat;$('#tBody').value=t.body;$('#tDue').value=t.due||'';$('#tNoDue').checked=!t.due;
   setPri(t.pri);$('#tDel').style.display=id?'':'none';open('#mTodo');
 }
-$('#fab').onclick=()=>openTodo(null);
+$('#fab').onclick=()=>$('#tab-bus').classList.contains('on')?openBus(null):openTodo(null);
 $('#tSave').onclick=()=>{
   const title=$('#tTitle').value.trim(); if(!title) return alert('タイトルを入力してください');
   const d={title,pri:ui.pri,cat:$('#tCat').value.trim(),body:$('#tBody').value,due:$('#tNoDue').checked?'':$('#tDue').value};
@@ -301,16 +349,16 @@ document.addEventListener('pointerup',endDrag);
 document.addEventListener('pointercancel',endDrag);
 
 /* ---------- 設定 ---------- */
-$('#gear').onclick=()=>{$('#gasUrl').value=gas();msg('');open('#mSet')};
-$('#setSave').onclick=()=>{try{localStorage.setItem(URLKEY,$('#gasUrl').value.trim())}catch(e){}msg('保存しました')};
+$('#gear').onclick=()=>{$('#gasUrl').value=gas();$('#xfMin').value=XF();msg('');open('#mSet')};
+$('#setSave').onclick=()=>{try{localStorage.setItem(URLKEY,$('#gasUrl').value.trim())}catch(e){}S.xfer=Math.max(0,parseInt($('#xfMin').value)||5);save();renderBus(false);msg('保存しました')};
 $('#push').onclick=()=>{try{localStorage.setItem(URLKEY,$('#gasUrl').value.trim())}catch(e){}push()};
 $('#pull').onclick=()=>{try{localStorage.setItem(URLKEY,$('#gasUrl').value.trim())}catch(e){}pull()};
 
 /* ---------- 起動 ---------- */
-function renderAll(){renderStops();renderBus();renderTodo()}
+function renderAll(){renderBus();renderTodo()}
 renderAll();
 if(gas()) pull();
-setInterval(renderBus,30000);
+setInterval(()=>renderBus(false),30000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)renderBus()});
 </script>
 </body>
