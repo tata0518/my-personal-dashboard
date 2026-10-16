@@ -81,6 +81,15 @@ input[type=time]{width:100%}
 .dist .lb{width:7.5em;flex:none}.dist .br{flex:1;height:12px;background:var(--bg);border-radius:6px;overflow:hidden}
 .dist .br i{display:block;height:100%}.dist .n{width:2em;text-align:right;color:var(--sub)}
 [data-rd]{cursor:pointer}
+.cmpr{display:grid;gap:4px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px;font-variant-numeric:tabular-nums}
+.g5{grid-template-columns:1.1fr .9fr 1.2fr 1.5fr 1fr}.g4{grid-template-columns:1.1fr .9fr 1.2fr 1.7fr}
+.cmpr.hd{font-size:11px;color:var(--sub);padding:4px 0}
+.cmpr span{display:block}.cmpr .cr{display:inline-block}.cmpr small{display:block;font-size:10px}
+.cmpr.past{opacity:.45}.cmpr .est{color:var(--sub)}
+.best{color:#16a34a;font-weight:700}.best .cr{box-shadow:0 0 0 2px #16a34a}
+.pick{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.pick .ic2{font-size:22px}.pick b{font-size:12px;color:var(--sub)}.pick .v{font-size:16px;font-weight:700}.pick .v small{font-weight:400;font-size:12px}
+body[data-tab=cmp] #fab{display:none}
 </style>
 </head>
 <body>
@@ -93,6 +102,13 @@ input[type=time]{width:100%}
    <div id="busBody"></div>
   </div>
  </section>
+ <section class="tab" id="tab-cmp">
+  <div class="card">
+   <div class="seg" id="cmpSeg"><button data-l="o1">行き①</button><button data-l="o2">行き②</button><button data-l="r1">帰り①</button><button data-l="r2">帰り②</button></div>
+   <label class="row" style="justify-content:flex-end"><input type="checkbox" id="cmpUp" checked><small>これから乗れる便のみ</small></label>
+   <div id="cmpBody"></div>
+  </div>
+ </section>
  <section class="tab" id="tab-todo">
   <div id="todoList"></div>
   <div class="row" style="justify-content:center;gap:16px"><label class="row"><input type="checkbox" id="showDone"><small>完了済みも表示</small></label><button class="btn" id="sortBtn"><small>期限順に並べ替え</small></button></div><div style="text-align:center"><small>カードを長押しして上下にドラッグで並べ替え</small></div>
@@ -101,6 +117,7 @@ input[type=time]{width:100%}
 <button id="fab">＋</button>
 <nav>
  <button data-t="bus" class="on"><span>🚌</span>バス</button>
+ <button data-t="cmp"><span>📊</span>比較</button>
  <button data-t="todo"><span>✅</span>やること</button>
 </nav>
 
@@ -202,7 +219,7 @@ $$('nav button').forEach(b=>b.onclick=()=>{
   $$('nav button').forEach(x=>x.classList.toggle('on',x===b));
   $$('.tab').forEach(t=>t.classList.toggle('on',t.id==='tab-'+b.dataset.t));
   document.body.classList.toggle('todo-on',b.dataset.t==='todo');
-  $('#ttl').textContent=b.dataset.t==='bus'?'🚌 バス時刻表':'✅ やることリスト';
+  $('#ttl').textContent=({bus:'🚌 バス時刻表',cmp:'📊 便の比較',todo:'✅ やることリスト'})[b.dataset.t];document.body.dataset.tab=b.dataset.t;if(b.dataset.t==='cmp')renderCmp();
   if(b.dataset.t==='bus') scrollNext();
 });
 
@@ -246,6 +263,7 @@ function renderBus(f=true){
   }
   $('#busBody').innerHTML=h;
   const id=nx?nx.id:null; if(f||ui.lastNx!==id) scrollNext(); ui.lastNx=id;
+  renderCmp();
 }
 function scrollNext(){setTimeout(()=>{const e=$('.tm.nx');if(e&&$('#tab-bus').classList.contains('on'))e.scrollIntoView({block:'center',behavior:'smooth'})},80)}
 $('#legSeg').onclick=e=>{const b=e.target.closest('button');if(b){ui.leg=b.dataset.l;renderBus()}};
@@ -359,6 +377,54 @@ function saveBus(again){
 $('#bSave').onclick=()=>saveBus(false);
 $('#bSave2').onclick=()=>saveBus(true);
 $('#bDel').onclick=()=>{if(confirm('この便と記録を削除しますか？')){S.buses=S.buses.filter(x=>x.id!==ui.editBus);S.recs=S.recs.filter(r=>r.busId!==ui.editBus);save();close();renderBus(false)}};
+
+/* ---------- 便の比較 ---------- */
+const fM=m=>{m=Math.round(m);return Math.floor(m/60)+':'+String(m%60).padStart(2,'0')};
+function bstats(b){
+  const rs=recsOf(b.id), avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+  const rides=rs.filter(r=>r.actDep&&r.actArr).map(r=>toMin(r.actArr)-toMin(r.actDep)).filter(v=>v>0);
+  const da=avg(rs.map(r=>r.da).filter(v=>v!=null));
+  const cr=rs.map(r=>r.crowd).filter(v=>v>0), xs=rs.filter(r=>r.xRes>0);
+  const sched=(b.arr&&toMin(b.dep)!==null)?toMin(b.arr)-toMin(b.dep):null, ride=avg(rides);
+  return {n:rs.length,ride:ride!=null?ride:sched,rideReal:ride!=null,da,
+    arrE:b.arr?toMin(b.arr)+(da||0):null,
+    crowd:cr.length?avg(cr):(+b.crowd>0?+b.crowd:null),crowdReal:cr.length>0,cn:cr.length,
+    xn:xs.length,xok:xs.length?xs.filter(r=>r.xRes<=2).length/xs.length:null};
+}
+function renderCmp(){
+  ui.cmpLeg=ui.cmpLeg||ui.leg||(new Date().getHours()<12?'o1':'r1');
+  $$('#cmpSeg button').forEach(x=>x.classList.toggle('on',x.dataset.l===ui.cmpLeg));
+  const now=new Date(), nm=now.getHours()*60+now.getMinutes(), up=$('#cmpUp').checked, L=LEGS[ui.cmpLeg], tx=!!NEXT[ui.cmpLeg];
+  let list=byDep(S.buses.filter(b=>b.leg===ui.cmpLeg)); if(up) list=list.filter(b=>toMin(b.dep)>=nm);
+  const head=`<div class="route"><b>${L.f}</b> → <b>${L.t}</b></div>`;
+  if(!list.length){ $('#cmpBody').innerHTML=head+'<div class="empty">'+(up?'これから乗れる便がありません。<br>「これから乗れる便のみ」を外すと全便を比較できます。':'便が未登録です。')+'</div>'; return }
+  const rows=list.map(b=>({b,s:bstats(b)}));
+  const minBy=(k,arr=rows)=>{const v=arr.filter(r=>r.s[k]!=null);return v.length?v.reduce((a,c)=>c.s[k]<a.s[k]?c:a):null};
+  const early=minBy('arrE'), seat=minBy('crowd'), fast=minBy('ride',rows.some(r=>r.s.rideReal)?rows.filter(r=>r.s.rideReal):rows);
+  const xr=rows.filter(r=>r.s.xok!=null), xf=xr.length?xr.reduce((a,c)=>(c.s.xok>a.s.xok||(c.s.xok===a.s.xok&&c.s.xn>a.s.xn))?c:a):null;
+  const pick=(ic,t,v)=>`<div class="pick"><span class="ic2">${ic}</span><div><b>${t}</b><div class="v">${v||'<small>データなし</small>'}</div></div></div>`;
+  let h=head;
+  h+=pick('⏱','早く着きたい',early&&`${fT(early.b.dep)}発 <small>→ ${fM(early.s.arrE)}着の目安${early.s.da!=null?'':'（定刻）'}</small>`);
+  h+=pick('💺','座りたい',seat&&`${fT(seat.b.dep)}発 <small>${CROWD[Math.round(seat.s.crowd)]}${seat.s.crowdReal?'（記録'+seat.s.cn+'件）':'（予想）'}</small>`);
+  if(tx) h+=pick('🔁','乗り換え確実',xf&&`${fT(xf.b.dep)}発 <small>成功率${Math.round(xf.s.xok*100)}%（${xf.s.xn}件）</small>`);
+  const cls=tx?'g5':'g4', best=(r,x)=>x&&x.b.id===r.b.id?' best':'';
+  h+=`<div class="route" style="margin-top:14px">全便の比較（タップで詳細）</div><div class="cmpr hd ${cls}"><span>発車</span><span>乗車</span><span>到着目安</span><span>混雑</span>${tx?'<span>乗継</span>':''}</div>`;
+  rows.forEach(r=>{
+    const {b,s}=r, ci=s.crowd!=null?Math.round(s.crowd):0;
+    h+=`<div class="cmpr ${cls} ${toMin(b.dep)<nm?'past':''}" data-id="${b.id}">`
+     +`<span><b>${fT(b.dep)}</b><small>${s.n?s.n+'件':'記録なし'}</small></span>`
+     +`<span class="${s.rideReal?'':'est'}${best(r,fast)}">${s.ride!=null?(s.rideReal?'':'~')+Math.round(s.ride)+'分':'--'}</span>`
+     +`<span class="${best(r,early).trim()}">${s.arrE!=null?fM(s.arrE)+(s.da!=null?`<small>(${sd(Math.round(s.da))})</small>`:''):'--'}</span>`
+     +`<span class="${best(r,seat).trim()}">${ci?`<span class="cr c${ci}" ${s.crowdReal?'':'style="opacity:.55"'}>${s.crowdReal?'':'予 '}${CROWD[ci]}</span>`:'--'}</span>`
+     +(tx?`<span class="${best(r,xf).trim()}">${s.xok!=null?Math.round(s.xok*100)+'%<small>('+s.xn+'件)</small>':'--'}</span>`:'')
+     +'</div>';
+  });
+  h+='<div style="margin-top:8px"><small>乗車・到着は記録の平均（~は定刻、予は予想）。緑は各項目でいちばん良い便。記録が少ないうちは目安です。乗継は、その便の記録に基づく成功率です。</small></div>';
+  $('#cmpBody').innerHTML=h;
+}
+$('#cmpSeg').onclick=e=>{const b=e.target.closest('button');if(b){ui.cmpLeg=b.dataset.l;renderCmp()}};
+$('#cmpUp').onchange=renderCmp;
+$('#cmpBody').onclick=e=>{const r=e.target.closest('[data-id]');if(r)openDet(r.dataset.id)};
 
 /* ---------- やることリスト ---------- */
 const todayStr=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
