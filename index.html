@@ -97,6 +97,7 @@ body[data-tab=cmp] #fab{display:none}
 .mh{display:flex;justify-content:space-between;font-weight:700;margin-bottom:4px}
 .meal{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
 .meal .k{text-align:right;white-space:nowrap;font-weight:700}.meal small{display:block}
+.thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}.th{position:relative;width:60px;height:60px}.th img{width:100%;height:100%;object-fit:cover;border-radius:8px}.th button{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;border:0;background:var(--red);color:#fff;font-size:12px;line-height:20px;padding:0}
 </style>
 </head>
 <body>
@@ -179,9 +180,12 @@ body[data-tab=cmp] #fab{display:none}
  <h3 id="mmT">食事を記録</h3>
  <label>区分</label>
  <div class="seg" id="slotSeg"><button data-s="朝">朝食</button><button data-s="昼">昼食</button><button data-s="夕">夕食</button><button data-s="間">間食</button></div>
- <label>写真・栄養成分のスクショ（AIが解析）</label>
- <input type="file" id="mFile" accept="image/*">
- <label>補足（任意・AIへのヒント）</label><input type="text" id="mHint" placeholder="例：ご飯は半分、ドレッシングなし">
+ <label>食事の内容（文章で書くと、AIが栄養素を計算します）</label>
+ <textarea id="mText" style="min-height:72px" placeholder="例：白ご飯150g、鮭の塩焼き1切れ、味噌汁、納豆1パック"></textarea>
+ <label>画像（任意・最大5枚：食事の写真／栄養成分表示のスクショ）</label>
+ <div class="thumbs" id="mThumbs"></div>
+ <button class="btn" id="mAdd" style="width:100%">＋ 画像を追加</button>
+ <input type="file" id="mFile" accept="image/*" multiple hidden>
  <button class="btn p" id="mAnalyze" style="width:100%;margin-top:10px">AIで解析</button>
  <div id="mStatus" style="margin-top:6px"><small></small></div>
  <label>名前</label><input type="text" id="mName">
@@ -593,13 +597,13 @@ $('#mDate').onchange=()=>{ui.mDay=$('#mDate').value||todayStr();renderMeal()};
 $('#mList').onclick=e=>{const r=e.target.closest('[data-mid]');if(r)openMeal(r.dataset.mid)};
 $('#slotSeg').onclick=e=>{const b=e.target.closest('button');if(b){ui.slot=b.dataset.s;$$('#slotSeg button').forEach(x=>x.classList.toggle('on',x===b))}};
 function openMeal(id){
-  ui.editMeal=id; ui.ai=false;
+  ui.editMeal=id; ui.ai=false; ui.imgs=ui.imgs||[];
   const m=S.meals.find(x=>x.id===id)||{slot:defSlot(),name:'',note:''}, dt=id?m.date:ui.mDay;
   ui.slot=m.slot; $$('#slotSeg button').forEach(b=>b.classList.toggle('on',b.dataset.s===m.slot));
   $('#mmT').textContent=(id?'食事を編集':'食事を記録')+'（'+dt.slice(5).replace('-','/')+'）';
   const v=x=>x?x:'';
   $('#mName').value=m.name; $('#mKcal').value=v(m.kcal); $('#mP').value=v(m.p); $('#mF').value=v(m.f); $('#mC').value=v(m.c); $('#mFib').value=v(m.fiber); $('#mSalt').value=v(m.salt); $('#mNote').value=m.note||'';
-  $('#mFile').value=''; $('#mHint').value=''; $('#mStatus').innerHTML='<small></small>'; $('#mDel').style.display=id?'':'none';
+  ui.imgs.forEach(x=>URL.revokeObjectURL(x.url)); ui.imgs=[]; $('#mText').value=''; renderThumbs(); $('#mStatus').innerHTML='<small></small>'; $('#mDel').style.display=id?'':'none';
   open('#mMeal');
 }
 function resizeImg(file,max=1400){return new Promise((res,rej)=>{
@@ -607,21 +611,36 @@ function resizeImg(file,max=1400){return new Promise((res,rej)=>{
   img.onload=()=>{const k=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',0.85).split(',')[1])};
   img.onerror=()=>rej(new Error('画像を読み込めませんでした'));img.src=u;
 })}
+function renderThumbs(){
+  $('#mThumbs').innerHTML=ui.imgs.map((x,i)=>`<div class="th"><img src="${x.url}"><button data-rm="${i}">×</button></div>`).join('');
+  const full=ui.imgs.length>=5; $('#mAdd').disabled=full;
+  $('#mAdd').textContent=full?'画像は最大5枚です':'＋ 画像を追加（'+ui.imgs.length+'/5）';
+}
+$('#mAdd').onclick=()=>$('#mFile').click();
+$('#mFile').onchange=e=>{
+  const fs=[...e.target.files], room=5-ui.imgs.length; e.target.value='';
+  if(fs.length>room) alert('画像は最大5枚までです。'+room+'枚だけ追加しました');
+  fs.slice(0,room).forEach(f=>ui.imgs.push({file:f,url:URL.createObjectURL(f)}));
+  renderThumbs();
+};
+$('#mThumbs').onclick=e=>{const b=e.target.closest('[data-rm]');if(b){URL.revokeObjectURL(ui.imgs[b.dataset.rm].url);ui.imgs.splice(+b.dataset.rm,1);renderThumbs()}};
 $('#mAnalyze').onclick=async()=>{
-  const f=$('#mFile').files[0], st=$('#mStatus'), btn=$('#mAnalyze');
-  if(!f) return alert('写真またはスクショを選んでください');
+  const text=$('#mText').value.trim(), st=$('#mStatus'), btn=$('#mAnalyze');
+  if(!text&&!ui.imgs.length) return alert('食事の内容（文章）か、画像のどちらかを入れてください');
   if(!gas()) return alert('⚙️でApps ScriptのURLを設定してください（AI解析に必要です）');
-  st.innerHTML='<small>解析中…（10〜20秒かかることがあります）</small>'; btn.disabled=true;
+  st.innerHTML='<small>解析中…（10〜30秒かかることがあります）</small>'; btn.disabled=true;
   try{
-    const img=await resizeImg(f);
-    const r=await fetch(gas(),{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({__analyze:true,image:img,mime:'image/jpeg',hint:$('#mHint').value.trim()})});
+    const mx=ui.imgs.length>2?1100:1400;
+    const images=await Promise.all(ui.imgs.map(x=>resizeImg(x.file,mx)));
+    const r=await fetch(gas(),{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({__analyze:true,text,images,mime:'image/jpeg'})});
     const d=await r.json();
     if(!d.ok) throw new Error(d.error||'解析に失敗しました');
     const x=d.result||{}; if(x.error) throw new Error(x.error);
     const v=n=>n?num(n):'';
     $('#mName').value=x.name||''; $('#mKcal').value=v(x.kcal); $('#mP').value=v(x.p); $('#mF').value=v(x.f); $('#mC').value=v(x.c); $('#mFib').value=v(x.fiber); $('#mSalt').value=v(x.salt);
+    if(!$('#mNote').value.trim()&&text) $('#mNote').value=text.slice(0,80);
     ui.ai=true;
-    st.innerHTML=`<small>${x.source==='label'?'表示の数値を読み取りました':'見た目からの推定です'}（${esc(d.model)}）。${esc(x.note||'')}　内容は修正できます。</small>`;
+    st.innerHTML=`<small>${x.source==='label'?'表示の数値を読み取りました':'内容からの推定です'}（${esc(d.model)}）。${esc(x.note||'')}　内容は修正できます。</small>`;
   }catch(e){st.innerHTML=`<small style="color:var(--red)">${esc(e.message)}</small>`}
   btn.disabled=false;
 };
