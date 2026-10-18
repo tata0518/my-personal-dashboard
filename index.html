@@ -90,6 +90,13 @@ input[type=time]{width:100%}
 .pick{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
 .pick .ic2{font-size:22px}.pick b{font-size:12px;color:var(--sub)}.pick .v{font-size:16px;font-weight:700}.pick .v small{font-weight:400;font-size:12px}
 body[data-tab=cmp] #fab{display:none}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+.pbar{height:10px;background:var(--bg);border-radius:6px;overflow:hidden}.pbar i{display:block;height:100%}
+.macro{display:grid;grid-template-columns:repeat(5,1fr);text-align:center;margin-top:12px}
+.macro b{display:block;font-size:16px}.macro small{font-size:10px}
+.mh{display:flex;justify-content:space-between;font-weight:700;margin-bottom:4px}
+.meal{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+.meal .k{text-align:right;white-space:nowrap;font-weight:700}.meal small{display:block}
 </style>
 </head>
 <body>
@@ -109,6 +116,14 @@ body[data-tab=cmp] #fab{display:none}
    <div id="cmpBody"></div>
   </div>
  </section>
+ <section class="tab" id="tab-meal">
+  <div class="card">
+   <div class="row" style="justify-content:space-between"><button class="ic" id="mPrev">‹</button><input type="date" id="mDate" style="width:auto"><button class="ic" id="mNext">›</button></div>
+   <div id="mTotal"></div>
+  </div>
+  <div id="mList"></div>
+  <div class="card"><div class="route">直近7日のカロリー</div><div id="mChart"></div></div>
+ </section>
  <section class="tab" id="tab-todo">
   <div id="todoList"></div>
   <div class="row" style="justify-content:center;gap:16px"><label class="row"><input type="checkbox" id="showDone"><small>完了済みも表示</small></label><button class="btn" id="sortBtn"><small>期限順に並べ替え</small></button></div><div style="text-align:center"><small>カードを長押しして上下にドラッグで並べ替え</small></div>
@@ -118,6 +133,7 @@ body[data-tab=cmp] #fab{display:none}
 <nav>
  <button data-t="bus" class="on"><span>🚌</span>バス</button>
  <button data-t="cmp"><span>📊</span>比較</button>
+ <button data-t="meal"><span>🍽</span>食事</button>
  <button data-t="todo"><span>✅</span>やること</button>
 </nav>
 
@@ -158,6 +174,29 @@ body[data-tab=cmp] #fab{display:none}
  <div class="acts"><button class="btn" data-close>閉じる</button></div>
 </div></div>
 
+<!-- 食事モーダル -->
+<div class="mask" id="mMeal"><div class="modal">
+ <h3 id="mmT">食事を記録</h3>
+ <label>区分</label>
+ <div class="seg" id="slotSeg"><button data-s="朝">朝食</button><button data-s="昼">昼食</button><button data-s="夕">夕食</button><button data-s="間">間食</button></div>
+ <label>写真・栄養成分のスクショ（AIが解析）</label>
+ <input type="file" id="mFile" accept="image/*">
+ <label>補足（任意・AIへのヒント）</label><input type="text" id="mHint" placeholder="例：ご飯は半分、ドレッシングなし">
+ <button class="btn p" id="mAnalyze" style="width:100%;margin-top:10px">AIで解析</button>
+ <div id="mStatus" style="margin-top:6px"><small></small></div>
+ <label>名前</label><input type="text" id="mName">
+ <div class="g2">
+  <div><label>カロリー(kcal)</label><input type="text" inputmode="decimal" id="mKcal"></div>
+  <div><label>たんぱく質(g)</label><input type="text" inputmode="decimal" id="mP"></div>
+  <div><label>脂質(g)</label><input type="text" inputmode="decimal" id="mF"></div>
+  <div><label>炭水化物(g)</label><input type="text" inputmode="decimal" id="mC"></div>
+  <div><label>食物繊維(g)</label><input type="text" inputmode="decimal" id="mFib"></div>
+  <div><label>塩分(g)</label><input type="text" inputmode="decimal" id="mSalt"></div>
+ </div>
+ <label>メモ</label><input type="text" id="mNote">
+ <div class="acts"><button class="btn d" id="mDel">削除</button><button class="btn" data-close>キャンセル</button><button class="btn p" id="mSave">保存</button></div>
+</div></div>
+
 <!-- やること モーダル -->
 <div class="mask" id="mTodo"><div class="modal">
  <h3 id="mTodoT">新規タスク</h3>
@@ -177,6 +216,7 @@ body[data-tab=cmp] #fab{display:none}
  <small>Apps ScriptのウェブアプリURLを入れると、変更のたびに自動保存し、起動時に読み込みます。空欄ならこの端末内（localStorage）のみ。</small>
  <label>Apps Script URL</label><input type="text" id="gasUrl" placeholder="https://script.google.com/macros/s/.../exec">
  <label>乗り換え所要時間（分）</label><input type="text" inputmode="numeric" id="xfMin">
+ <label>1日の目標カロリー（kcal・空欄で非表示）</label><input type="text" inputmode="numeric" id="goalKcal">
  <div id="syncMsg"><small></small></div>
  <div class="acts"><button class="btn" id="pull">読込</button><button class="btn" id="push">送信</button><button class="btn p" id="setSave">保存</button></div>
  <div class="acts"><button class="btn" data-close>閉じる</button></div>
@@ -187,7 +227,7 @@ const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const uid=()=>Math.random().toString(36).slice(2,10);
 const KEY='myDash.v1', URLKEY='myDash.gas';
-let S={buses:[],xfers:[],recs:[],todos:[]}, ui={day:null,pri:'B',editStop:null,editTodo:null};
+let S={buses:[],xfers:[],recs:[],meals:[],todos:[]}, ui={day:null,pri:'B',editStop:null,editTodo:null};
 
 /* ---------- 保存・同期 ---------- */
 try{const r=localStorage.getItem(KEY); if(r) S=Object.assign(S,JSON.parse(r));}catch(e){}
@@ -205,7 +245,7 @@ async function push(){
 async function pull(){
   if(!gas()) return msg('URL未設定');
   try{const r=await fetch(gas()); const d=await r.json();
-    if(d&&(d.stops||d.todos)){S=Object.assign({buses:[],xfers:[],recs:[],todos:[]},d);try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}renderAll();msg('読み込みました')}
+    if(d&&(d.stops||d.todos)){S=Object.assign({buses:[],xfers:[],recs:[],meals:[],todos:[]},d);try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}renderAll();msg('読み込みました')}
     else msg('シートにデータがありません');
   }catch(e){msg('読込失敗: '+e.message)}
 }
@@ -219,7 +259,7 @@ $$('nav button').forEach(b=>b.onclick=()=>{
   $$('nav button').forEach(x=>x.classList.toggle('on',x===b));
   $$('.tab').forEach(t=>t.classList.toggle('on',t.id==='tab-'+b.dataset.t));
   document.body.classList.toggle('todo-on',b.dataset.t==='todo');
-  $('#ttl').textContent=({bus:'🚌 バス時刻表',cmp:'📊 便の比較',todo:'✅ やることリスト'})[b.dataset.t];document.body.dataset.tab=b.dataset.t;if(b.dataset.t==='cmp')renderCmp();
+  $('#ttl').textContent=({bus:'🚌 バス時刻表',cmp:'📊 便の比較',meal:'🍽 食事記録',todo:'✅ やることリスト'})[b.dataset.t];document.body.dataset.tab=b.dataset.t;if(b.dataset.t==='cmp')renderCmp();if(b.dataset.t==='meal')renderMeal();
   if(b.dataset.t==='bus') scrollNext();
 });
 
@@ -458,7 +498,7 @@ function openTodo(id){
   $('#tTitle').value=t.title;$('#tCat').value=t.cat;$('#tBody').value=t.body;$('#tDue').value=t.due||'';$('#tNoDue').checked=!t.due;
   setPri(t.pri);$('#tDel').style.display=id?'':'none';open('#mTodo');
 }
-$('#fab').onclick=()=>$('#tab-bus').classList.contains('on')?openBus(null):openTodo(null);
+$('#fab').onclick=()=>{const t=document.body.dataset.tab||'bus';t==='todo'?openTodo(null):t==='meal'?openMeal(null):openBus(null)};
 $('#tSave').onclick=()=>{
   const title=$('#tTitle').value.trim(); if(!title) return alert('タイトルを入力してください');
   const d={title,pri:ui.pri,cat:$('#tCat').value.trim(),body:$('#tBody').value,due:$('#tNoDue').checked?'':$('#tDue').value};
@@ -511,21 +551,105 @@ function endDrag(){
 document.addEventListener('pointerup',endDrag);
 document.addEventListener('pointercancel',endDrag);
 
+/* ---------- 食事記録 ---------- */
+const SLOTS=[['朝','朝食'],['昼','昼食'],['夕','夕食'],['間','間食']];
+const fmtD=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const addD=(s,n)=>{const d=new Date(s+'T00:00:00');d.setDate(d.getDate()+n);return fmtD(d)};
+const num=v=>Math.round((parseFloat(v)||0)*10)/10;
+const sum=(a,k)=>Math.round(a.reduce((t,m)=>t+(+m[k]||0),0)*10)/10;
+const defSlot=()=>{const h=new Date().getHours();return h<10?'朝':h<15?'昼':h<17?'間':h<22?'夕':'間'};
+function mealChart(){
+  const days=[...Array(7)].map((_,i)=>addD(ui.mDay,i-6)), goal=+S.goal||0;
+  const v=days.map(d=>sum(S.meals.filter(m=>m.date===d),'kcal')), mx=Math.max(goal,...v,1);
+  const W=320,H=130,b=105,k=85/mx,st=W/7;
+  let s=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block">`;
+  v.forEach((x,i)=>{
+    const h=x*k, cx=st*i+st/2;
+    s+=`<rect x="${cx-12}" y="${b-h}" width="24" height="${h}" rx="3" fill="${goal&&x>goal?'var(--red)':'var(--pri)'}" opacity="${days[i]===ui.mDay?1:.55}"/>`
+      +(x?`<text x="${cx}" y="${b-h-3}" font-size="9" text-anchor="middle" fill="var(--sub)">${Math.round(x)}</text>`:'')
+      +`<text x="${cx}" y="${H-6}" font-size="10" text-anchor="middle" fill="var(--sub)">${days[i].slice(8)}</text>`;
+  });
+  if(goal) s+=`<line x1="0" x2="${W}" y1="${b-goal*k}" y2="${b-goal*k}" stroke="var(--sub)" stroke-dasharray="4 3"/>`;
+  return s+'</svg>';
+}
+function renderMeal(){
+  const day=ui.mDay=ui.mDay||todayStr(); $('#mDate').value=day;
+  const ms=S.meals.filter(m=>m.date===day), goal=+S.goal||0, k=sum(ms,'kcal');
+  $('#mTotal').innerHTML=`<div style="margin:10px 0 6px"><span style="font-size:30px;font-weight:700">${Math.round(k).toLocaleString()}</span> kcal${goal?`　<small>目標 ${goal}（${k>goal?'超過 '+Math.round(k-goal):'残り '+Math.round(goal-k)}）</small>`:''}</div>`
+    +(goal?`<div class="pbar"><i style="width:${Math.min(100,k/goal*100)}%;background:${k>goal?'var(--red)':'var(--pri)'}"></i></div>`:'')
+    +`<div class="macro"><div><b>${sum(ms,'p')}</b><small>たんぱく質g</small></div><div><b>${sum(ms,'f')}</b><small>脂質g</small></div><div><b>${sum(ms,'c')}</b><small>炭水化物g</small></div><div><b>${sum(ms,'fiber')}</b><small>食物繊維g</small></div><div><b>${sum(ms,'salt')}</b><small>塩分g</small></div></div>`;
+  let h='';
+  SLOTS.forEach(([key,label])=>{
+    const l=ms.filter(m=>m.slot===key).sort((a,b)=>a.ts-b.ts); if(!l.length) return;
+    h+=`<div class="card"><div class="mh"><span>${label}</span><span>${Math.round(sum(l,'kcal'))} kcal</span></div>`
+      +l.map(m=>`<div class="meal" data-mid="${m.id}"><div><div>${m.ai?'🤖 ':''}${esc(m.name)}</div><small>${esc(m.note)}</small></div><div class="k">${Math.round(m.kcal)} kcal<small>P${m.p} F${m.f} C${m.c}</small></div></div>`).join('')+'</div>';
+  });
+  $('#mList').innerHTML=h||'<div class="empty">この日の記録はありません。<br>右下の「＋」から、写真や栄養成分のスクショを登録できます。</div>';
+  $('#mChart').innerHTML=mealChart();
+}
+$('#mPrev').onclick=()=>{ui.mDay=addD(ui.mDay,-1);renderMeal()};
+$('#mNext').onclick=()=>{ui.mDay=addD(ui.mDay,1);renderMeal()};
+$('#mDate').onchange=()=>{ui.mDay=$('#mDate').value||todayStr();renderMeal()};
+$('#mList').onclick=e=>{const r=e.target.closest('[data-mid]');if(r)openMeal(r.dataset.mid)};
+$('#slotSeg').onclick=e=>{const b=e.target.closest('button');if(b){ui.slot=b.dataset.s;$$('#slotSeg button').forEach(x=>x.classList.toggle('on',x===b))}};
+function openMeal(id){
+  ui.editMeal=id; ui.ai=false;
+  const m=S.meals.find(x=>x.id===id)||{slot:defSlot(),name:'',note:''}, dt=id?m.date:ui.mDay;
+  ui.slot=m.slot; $$('#slotSeg button').forEach(b=>b.classList.toggle('on',b.dataset.s===m.slot));
+  $('#mmT').textContent=(id?'食事を編集':'食事を記録')+'（'+dt.slice(5).replace('-','/')+'）';
+  const v=x=>x?x:'';
+  $('#mName').value=m.name; $('#mKcal').value=v(m.kcal); $('#mP').value=v(m.p); $('#mF').value=v(m.f); $('#mC').value=v(m.c); $('#mFib').value=v(m.fiber); $('#mSalt').value=v(m.salt); $('#mNote').value=m.note||'';
+  $('#mFile').value=''; $('#mHint').value=''; $('#mStatus').innerHTML='<small></small>'; $('#mDel').style.display=id?'':'none';
+  open('#mMeal');
+}
+function resizeImg(file,max=1400){return new Promise((res,rej)=>{
+  const img=new Image(), u=URL.createObjectURL(file);
+  img.onload=()=>{const k=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',0.85).split(',')[1])};
+  img.onerror=()=>rej(new Error('画像を読み込めませんでした'));img.src=u;
+})}
+$('#mAnalyze').onclick=async()=>{
+  const f=$('#mFile').files[0], st=$('#mStatus'), btn=$('#mAnalyze');
+  if(!f) return alert('写真またはスクショを選んでください');
+  if(!gas()) return alert('⚙️でApps ScriptのURLを設定してください（AI解析に必要です）');
+  st.innerHTML='<small>解析中…（10〜20秒かかることがあります）</small>'; btn.disabled=true;
+  try{
+    const img=await resizeImg(f);
+    const r=await fetch(gas(),{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({__analyze:true,image:img,mime:'image/jpeg',hint:$('#mHint').value.trim()})});
+    const d=await r.json();
+    if(!d.ok) throw new Error(d.error||'解析に失敗しました');
+    const x=d.result||{}; if(x.error) throw new Error(x.error);
+    const v=n=>n?num(n):'';
+    $('#mName').value=x.name||''; $('#mKcal').value=v(x.kcal); $('#mP').value=v(x.p); $('#mF').value=v(x.f); $('#mC').value=v(x.c); $('#mFib').value=v(x.fiber); $('#mSalt').value=v(x.salt);
+    ui.ai=true;
+    st.innerHTML=`<small>${x.source==='label'?'表示の数値を読み取りました':'見た目からの推定です'}（${esc(d.model)}）。${esc(x.note||'')}　内容は修正できます。</small>`;
+  }catch(e){st.innerHTML=`<small style="color:var(--red)">${esc(e.message)}</small>`}
+  btn.disabled=false;
+};
+$('#mSave').onclick=()=>{
+  const d={slot:ui.slot,name:$('#mName').value.trim(),kcal:num($('#mKcal').value),p:num($('#mP').value),f:num($('#mF').value),c:num($('#mC').value),fiber:num($('#mFib').value),salt:num($('#mSalt').value),note:$('#mNote').value.trim(),ai:!!ui.ai};
+  if(!d.name&&!d.kcal) return alert('名前かカロリーを入力してください');
+  if(!d.name) d.name='（無題）';
+  if(ui.editMeal){const m=S.meals.find(x=>x.id===ui.editMeal);d.ai=m.ai||d.ai;Object.assign(m,d)}
+  else S.meals.push({id:uid(),ts:Date.now(),date:ui.mDay,...d});
+  save();close();renderMeal();
+};
+$('#mDel').onclick=()=>{if(confirm('この記録を削除しますか？')){S.meals=S.meals.filter(x=>x.id!==ui.editMeal);save();close();renderMeal()}};
+
 /* ---------- 設定 ---------- */
-$('#gear').onclick=()=>{$('#gasUrl').value=gas();$('#xfMin').value=XF();msg('');open('#mSet')};
-$('#setSave').onclick=()=>{try{localStorage.setItem(URLKEY,$('#gasUrl').value.trim())}catch(e){}S.xfer=Math.max(0,parseInt($('#xfMin').value)||5);save();renderBus(false);msg('保存しました')};
+$('#gear').onclick=()=>{$('#gasUrl').value=gas();$('#xfMin').value=XF();$('#goalKcal').value=S.goal||'';msg('');open('#mSet')};
+$('#setSave').onclick=()=>{try{localStorage.setItem(URLKEY,$('#gasUrl').value.trim())}catch(e){}S.xfer=Math.max(0,parseInt($('#xfMin').value)||5);S.goal=parseInt($('#goalKcal').value)||0;save();renderBus(false);renderMeal();msg('保存しました')};
 $('#push').onclick=()=>{try{localStorage.setItem(URLKEY,$('#gasUrl').value.trim())}catch(e){}push()};
 $('#pull').onclick=()=>{try{localStorage.setItem(URLKEY,$('#gasUrl').value.trim())}catch(e){}pull()};
 
 /* ---------- 起動 ---------- */
 function migrate(){
-  if(!S.recs)S.recs=[];
+  if(!S.recs)S.recs=[]; if(!S.meals)S.meals=[];
   if(S.xfers&&S.xfers.length&&!S.recs.length){
     S.recs=S.xfers.map(x=>({id:uid(),ts:x.ts||0,date:x.date,busId:x.aId,leg:x.leg,actDep:'',actArr:x.actual||'',dd:null,da:null,crowd:0,xBusId:x.bId,xRes:x.ok?1:3}));
     S.xfers=[]; save();
   }
 }
-function renderAll(){migrate();renderBus();renderTodo()}
+function renderAll(){migrate();renderBus();renderTodo();renderMeal()}
 renderAll();
 if(gas()) pull();
 setInterval(()=>renderBus(false),30000);
