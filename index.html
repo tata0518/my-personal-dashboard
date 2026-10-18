@@ -89,7 +89,12 @@ input[type=time]{width:100%}
 .best{color:#16a34a;font-weight:700}.best .cr{box-shadow:0 0 0 2px #16a34a}
 .pick{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
 .pick .ic2{font-size:22px}.pick b{font-size:12px;color:var(--sub)}.pick .v{font-size:16px;font-weight:700}.pick .v small{font-weight:400;font-size:12px}
-body[data-tab=cmp] #fab{display:none}
+body[data-tab=cmp] #fab,body[data-tab=set] #fab{display:none}
+body[data-tab=meal] header{display:none}
+.ic.sm{width:30px;height:30px;font-size:14px;padding:0}
+.dsel.sm{padding:4px 12px;font-size:14px;border-radius:7px}
+.set label{display:block;font-size:12px;color:var(--sub);margin:10px 0 4px}
+.set .acts{display:flex;gap:8px;margin-top:12px}.set .acts .btn{flex:1}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
 .pbar{height:10px;background:var(--bg);border-radius:6px;overflow:hidden}.pbar i{display:block;height:100%}
 .macro{display:grid;grid-template-columns:repeat(5,1fr);text-align:center;margin-top:12px}
@@ -108,7 +113,7 @@ body[data-tab=cmp] #fab{display:none}
 </style>
 </head>
 <body>
-<header><span id="ttl">🚌 バス時刻表</span><button id="gear">⚙️</button></header>
+<header><span id="ttl">🚌 バス時刻表</span></header>
 <main>
  <section class="tab on" id="tab-bus">
   <div class="card"><a class="link" target="_blank" rel="noopener" href="https://www.kotsu.metro.tokyo.jp/bus/unkou/">🔗 都営バス 運行情報を見る</a></div>
@@ -126,7 +131,7 @@ body[data-tab=cmp] #fab{display:none}
  </section>
  <section class="tab" id="tab-meal">
   <div class="stk"><div class="card">
-   <div class="row" style="justify-content:space-between"><button class="ic" id="mPrev">‹</button><label class="dsel"><span id="mDateTxt"></span><input type="date" id="mDate"></label><button class="ic" id="mNext">›</button></div>
+   <div class="row" style="justify-content:space-between"><button class="ic sm" id="mPrev">‹</button><label class="dsel sm"><span id="mDateTxt"></span><input type="date" id="mDate"></label><button class="ic sm" id="mNext">›</button></div>
    <div id="mTotal"></div>
   </div></div>
   <div id="mList"></div>
@@ -136,6 +141,33 @@ body[data-tab=cmp] #fab{display:none}
   <div id="todoList"></div>
   <div class="row" style="justify-content:center;gap:16px"><label class="row"><input type="checkbox" id="showDone"><small>完了済みも表示</small></label><button class="btn" id="sortBtn"><small>期限順に並べ替え</small></button></div><div style="text-align:center"><small>カードを長押しして上下にドラッグで並べ替え</small></div>
  </section>
+ <section class="tab set" id="tab-set">
+  <div class="card">
+   <div class="route"><b>データ同期（Googleスプレッドシート）</b></div>
+   <small>Apps ScriptのウェブアプリURLを入れると、変更のたびに自動保存し、起動時に読み込みます。食事のAI解析にも使います。空欄なら、この端末内のみに保存します。</small>
+   <label>Apps Script URL</label><input type="text" id="gasUrl" placeholder="https://script.google.com/macros/s/.../exec">
+   <div id="syncMsg" style="margin-top:6px"><small></small></div>
+   <div class="acts"><button class="btn" id="pull">読込</button><button class="btn" id="push">送信</button></div>
+  </div>
+  <div class="card">
+   <div class="route"><b>🚌 バス</b></div>
+   <label>乗り換え所要時間（分）</label><input type="text" inputmode="numeric" id="xfMin">
+  </div>
+  <div class="card">
+   <div class="route"><b>食事</b></div>
+   <label>1日の栄養目標（空欄なら目標なし）</label>
+   <div class="g2">
+    <div><label>カロリー kcal（以内）</label><input type="text" inputmode="decimal" id="gKcal"></div>
+    <div><label>たんぱく質 g（以上）</label><input type="text" inputmode="decimal" id="gP"></div>
+    <div><label>脂質 g（以内）</label><input type="text" inputmode="decimal" id="gF"></div>
+    <div><label>炭水化物 g（以内）</label><input type="text" inputmode="decimal" id="gC"></div>
+    <div><label>食物繊維 g（以上）</label><input type="text" inputmode="decimal" id="gFib"></div>
+    <div><label>塩分 g（以内）</label><input type="text" inputmode="decimal" id="gSalt"></div>
+   </div>
+   <button class="btn" id="gReset" style="width:100%;margin-top:10px">おすすめ値に戻す</button>
+  </div>
+  <div style="text-align:center"><small>変更は自動で保存されます。</small></div>
+ </section>
 </main>
 <button id="fab">＋</button>
 <nav>
@@ -143,6 +175,7 @@ body[data-tab=cmp] #fab{display:none}
  <button data-t="cmp"><span>📊</span>比較</button>
  <button data-t="meal"><span>🍽</span>食事</button>
  <button data-t="todo"><span>✅</span>やること</button>
+ <button data-t="set"><span>⚙️</span>設定</button>
 </nav>
 
 <!-- 便モーダル -->
@@ -227,27 +260,6 @@ body[data-tab=cmp] #fab{display:none}
  <div class="acts"><button class="btn d" id="tDel">削除</button><button class="btn" data-close>キャンセル</button><button class="btn p" id="tSave">保存</button></div>
 </div></div>
 
-<!-- 設定モーダル -->
-<div class="mask" id="mSet"><div class="modal">
- <h3>⚙️ Googleスプレッドシート同期</h3>
- <small>Apps ScriptのウェブアプリURLを入れると、変更のたびに自動保存し、起動時に読み込みます。空欄ならこの端末内（localStorage）のみ。</small>
- <label>Apps Script URL</label><input type="text" id="gasUrl" placeholder="https://script.google.com/macros/s/.../exec">
- <label>乗り換え所要時間（分）</label><input type="text" inputmode="numeric" id="xfMin">
- <label>1日の栄養目標（空欄なら目標なし）</label>
- <div class="g2">
-  <div><label>カロリー kcal（以内）</label><input type="text" inputmode="decimal" id="gKcal"></div>
-  <div><label>たんぱく質 g（以上）</label><input type="text" inputmode="decimal" id="gP"></div>
-  <div><label>脂質 g（以内）</label><input type="text" inputmode="decimal" id="gF"></div>
-  <div><label>炭水化物 g（以内）</label><input type="text" inputmode="decimal" id="gC"></div>
-  <div><label>食物繊維 g（以上）</label><input type="text" inputmode="decimal" id="gFib"></div>
-  <div><label>塩分 g（以内）</label><input type="text" inputmode="decimal" id="gSalt"></div>
- </div>
- <button class="btn" id="gReset" style="width:100%;margin-top:8px">おすすめ値に戻す（31歳男性・175cm・減量中）</button>
- <div id="syncMsg"><small></small></div>
- <div class="acts"><button class="btn" id="pull">読込</button><button class="btn" id="push">送信</button><button class="btn p" id="setSave">保存</button></div>
- <div class="acts"><button class="btn" data-close>閉じる</button></div>
-</div></div>
-
 <script>
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -285,7 +297,7 @@ $$('nav button').forEach(b=>b.onclick=()=>{
   $$('nav button').forEach(x=>x.classList.toggle('on',x===b));
   $$('.tab').forEach(t=>t.classList.toggle('on',t.id==='tab-'+b.dataset.t));
   document.body.classList.toggle('todo-on',b.dataset.t==='todo');
-  $('#ttl').textContent=({bus:'🚌 バス時刻表',cmp:'📊 便の比較',meal:'食事記録',todo:'✅ やることリスト'})[b.dataset.t];document.body.dataset.tab=b.dataset.t;if(b.dataset.t==='cmp')renderCmp();if(b.dataset.t==='meal')renderMeal();
+  $('#ttl').textContent=({bus:'🚌 バス時刻表',cmp:'📊 便の比較',meal:'食事記録',set:'⚙️ 設定',todo:'✅ やることリスト'})[b.dataset.t];document.body.dataset.tab=b.dataset.t;if(b.dataset.t==='cmp')renderCmp();if(b.dataset.t==='meal')renderMeal();if(b.dataset.t==='set')fillSettings();
   if(b.dataset.t==='bus') scrollNext();
 });
 
@@ -583,7 +595,6 @@ const G=()=>Object.assign({},DEF_GOALS,S.goals||{});
 const GID={kcal:'gKcal',p:'gP',f:'gF',c:'gC',fiber:'gFib',salt:'gSalt'};
 function fillGoals(g){g=g||G();Object.keys(GID).forEach(k=>$('#'+GID[k]).value=g[k]||'')}
 function readGoals(){const g={};Object.keys(GID).forEach(k=>g[k]=num($('#'+GID[k]).value));S.goals=g}
-$('#gReset').onclick=()=>fillGoals(DEF_GOALS);
 const NUT=[['p','たんぱく質','min'],['f','脂質','max'],['c','炭水化物','max'],['fiber','食物繊維','min'],['salt','塩分','max']];
 function barHtml(val,goal,type,sc,col){
   if(!goal) return '<div class="pb2"></div>';
@@ -736,10 +747,14 @@ $('#mSave').onclick=()=>{
 $('#mDel').onclick=()=>{if(confirm('この記録を削除しますか？')){S.meals=S.meals.filter(x=>x.id!==ui.editMeal);save();close();renderMeal()}};
 
 /* ---------- 設定 ---------- */
-$('#gear').onclick=()=>{$('#gasUrl').value=gas();$('#xfMin').value=XF();fillGoals();msg('');open('#mSet')};
-$('#setSave').onclick=()=>{try{localStorage.setItem(URLKEY,$('#gasUrl').value.trim())}catch(e){}S.xfer=Math.max(0,parseInt($('#xfMin').value)||5);readGoals();save();renderBus(false);renderMeal();msg('保存しました')};
-$('#push').onclick=()=>{try{localStorage.setItem(URLKEY,$('#gasUrl').value.trim())}catch(e){}push()};
-$('#pull').onclick=()=>{try{localStorage.setItem(URLKEY,$('#gasUrl').value.trim())}catch(e){}pull()};
+function fillSettings(){$('#gasUrl').value=gas();$('#xfMin').value=XF();fillGoals()}
+const setUrl=()=>{try{localStorage.setItem(URLKEY,$('#gasUrl').value.trim())}catch(e){}};
+$('#gasUrl').onchange=()=>{setUrl();msg('URLを保存しました')};
+$('#xfMin').onchange=()=>{S.xfer=Math.max(0,parseInt($('#xfMin').value)||5);$('#xfMin').value=S.xfer;save();renderBus(false)};
+Object.values(GID).forEach(id=>$('#'+id).onchange=()=>{readGoals();save();renderMeal()});
+$('#gReset').onclick=()=>{fillGoals(DEF_GOALS);readGoals();save();renderMeal()};
+$('#push').onclick=()=>{setUrl();push()};
+$('#pull').onclick=()=>{setUrl();pull()};
 
 /* ---------- 起動 ---------- */
 function migrate(){
@@ -750,7 +765,7 @@ function migrate(){
     S.xfers=[]; save();
   }
 }
-function renderAll(){migrate();renderBus();renderTodo();renderMeal()}
+function renderAll(){migrate();renderBus();renderTodo();renderMeal();fillSettings()}
 renderAll();
 if(gas()) pull();
 setInterval(()=>renderBus(false),30000);
