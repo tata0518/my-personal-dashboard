@@ -98,6 +98,7 @@ body[data-tab=cmp] #fab{display:none}
 .meal{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
 .meal .k{text-align:right;white-space:nowrap;font-weight:700}.meal small{display:block}
 .thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}.th{position:relative;width:60px;height:60px}.th img{width:100%;height:100%;object-fit:cover;border-radius:8px}.th button{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;border:0;background:var(--red);color:#fff;font-size:12px;line-height:20px;padding:0}
+.nb{margin-top:10px}.nh{display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px}.nh small{color:var(--sub);font-size:11px}
 </style>
 </head>
 <body>
@@ -220,7 +221,16 @@ body[data-tab=cmp] #fab{display:none}
  <small>Apps ScriptのウェブアプリURLを入れると、変更のたびに自動保存し、起動時に読み込みます。空欄ならこの端末内（localStorage）のみ。</small>
  <label>Apps Script URL</label><input type="text" id="gasUrl" placeholder="https://script.google.com/macros/s/.../exec">
  <label>乗り換え所要時間（分）</label><input type="text" inputmode="numeric" id="xfMin">
- <label>1日の目標カロリー（kcal・空欄で非表示）</label><input type="text" inputmode="numeric" id="goalKcal">
+ <label>1日の栄養目標（空欄なら目標なし）</label>
+ <div class="g2">
+  <div><label>カロリー kcal（以内）</label><input type="text" inputmode="decimal" id="gKcal"></div>
+  <div><label>たんぱく質 g（以上）</label><input type="text" inputmode="decimal" id="gP"></div>
+  <div><label>脂質 g（以内）</label><input type="text" inputmode="decimal" id="gF"></div>
+  <div><label>炭水化物 g（以内）</label><input type="text" inputmode="decimal" id="gC"></div>
+  <div><label>食物繊維 g（以上）</label><input type="text" inputmode="decimal" id="gFib"></div>
+  <div><label>塩分 g（以内）</label><input type="text" inputmode="decimal" id="gSalt"></div>
+ </div>
+ <button class="btn" id="gReset" style="width:100%;margin-top:8px">おすすめ値に戻す（31歳男性・175cm・減量中）</button>
  <div id="syncMsg"><small></small></div>
  <div class="acts"><button class="btn" id="pull">読込</button><button class="btn" id="push">送信</button><button class="btn p" id="setSave">保存</button></div>
  <div class="acts"><button class="btn" data-close>閉じる</button></div>
@@ -556,6 +566,19 @@ document.addEventListener('pointerup',endDrag);
 document.addEventListener('pointercancel',endDrag);
 
 /* ---------- 食事記録 ---------- */
+const DEF_GOALS={kcal:1600,p:110,f:45,c:190,fiber:22,salt:7.5};
+const G=()=>Object.assign({},DEF_GOALS,S.goals||{});
+const GID={kcal:'gKcal',p:'gP',f:'gF',c:'gC',fiber:'gFib',salt:'gSalt'};
+function fillGoals(g){g=g||G();Object.keys(GID).forEach(k=>$('#'+GID[k]).value=g[k]||'')}
+function readGoals(){const g={};Object.keys(GID).forEach(k=>g[k]=num($('#'+GID[k]).value));S.goals=g}
+$('#gReset').onclick=()=>fillGoals(DEF_GOALS);
+const NUT=[['p','たんぱく質','min'],['f','脂質','max'],['c','炭水化物','max'],['fiber','食物繊維','min'],['salt','塩分','max']];
+function nutBar(label,val,goal,type){
+  const pct=goal?val/goal*100:0;
+  const col=!goal?'var(--sub)':type==='min'?(pct>=100?'#16a34a':'var(--pri)'):(pct>100?'var(--red)':'var(--pri)');
+  const u=label==='塩分'||true?'g':'g';
+  return `<div class="nb"><div class="nh"><span>${label}<small>${goal?(type==='min'?'（以上）':'（以内）'):''}</small></span><span>${val}${goal?' / '+goal:''} ${u}</span></div><div class="pbar"><i style="width:${Math.min(100,pct)}%;background:${col}"></i></div></div>`;
+}
 const SLOTS=[['朝','朝食'],['昼','昼食'],['夕','夕食'],['間','間食']];
 const fmtD=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 const addD=(s,n)=>{const d=new Date(s+'T00:00:00');d.setDate(d.getDate()+n);return fmtD(d)};
@@ -563,7 +586,7 @@ const num=v=>Math.round((parseFloat(v)||0)*10)/10;
 const sum=(a,k)=>Math.round(a.reduce((t,m)=>t+(+m[k]||0),0)*10)/10;
 const defSlot=()=>{const h=new Date().getHours();return h<10?'朝':h<15?'昼':h<17?'間':h<22?'夕':'間'};
 function mealChart(){
-  const days=[...Array(7)].map((_,i)=>addD(ui.mDay,i-6)), goal=+S.goal||0;
+  const days=[...Array(7)].map((_,i)=>addD(ui.mDay,i-6)), goal=G().kcal;
   const v=days.map(d=>sum(S.meals.filter(m=>m.date===d),'kcal')), mx=Math.max(goal,...v,1);
   const W=320,H=130,b=105,k=85/mx,st=W/7;
   let s=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block">`;
@@ -578,10 +601,10 @@ function mealChart(){
 }
 function renderMeal(){
   const day=ui.mDay=ui.mDay||todayStr(); $('#mDate').value=day;
-  const ms=S.meals.filter(m=>m.date===day), goal=+S.goal||0, k=sum(ms,'kcal');
+  const ms=S.meals.filter(m=>m.date===day), goal=G().kcal, k=sum(ms,'kcal');
   $('#mTotal').innerHTML=`<div style="margin:10px 0 6px"><span style="font-size:30px;font-weight:700">${Math.round(k).toLocaleString()}</span> kcal${goal?`　<small>目標 ${goal}（${k>goal?'超過 '+Math.round(k-goal):'残り '+Math.round(goal-k)}）</small>`:''}</div>`
     +(goal?`<div class="pbar"><i style="width:${Math.min(100,k/goal*100)}%;background:${k>goal?'var(--red)':'var(--pri)'}"></i></div>`:'')
-    +`<div class="macro"><div><b>${sum(ms,'p')}</b><small>たんぱく質g</small></div><div><b>${sum(ms,'f')}</b><small>脂質g</small></div><div><b>${sum(ms,'c')}</b><small>炭水化物g</small></div><div><b>${sum(ms,'fiber')}</b><small>食物繊維g</small></div><div><b>${sum(ms,'salt')}</b><small>塩分g</small></div></div>`;
+    +NUT.map(([k,l,t])=>nutBar(l,sum(ms,k),G()[k],t)).join('');
   let h='';
   SLOTS.forEach(([key,label])=>{
     const l=ms.filter(m=>m.slot===key).sort((a,b)=>a.ts-b.ts); if(!l.length) return;
@@ -633,7 +656,8 @@ $('#mAnalyze').onclick=async()=>{
     const mx=ui.imgs.length>2?1100:1400;
     const images=await Promise.all(ui.imgs.map(x=>resizeImg(x.file,mx)));
     const r=await fetch(gas(),{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({__analyze:true,text,images,mime:'image/jpeg'})});
-    const d=await r.json();
+    const raw=await r.text(); let d;
+    try{d=JSON.parse(raw)}catch(e){throw new Error('サーバーの応答を読み取れませんでした: '+raw.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim().slice(0,160))}
     if(!d.ok) throw new Error(d.error||'解析に失敗しました');
     const x=d.result||{}; if(x.error) throw new Error(x.error);
     const v=n=>n?num(n):'';
@@ -655,13 +679,14 @@ $('#mSave').onclick=()=>{
 $('#mDel').onclick=()=>{if(confirm('この記録を削除しますか？')){S.meals=S.meals.filter(x=>x.id!==ui.editMeal);save();close();renderMeal()}};
 
 /* ---------- 設定 ---------- */
-$('#gear').onclick=()=>{$('#gasUrl').value=gas();$('#xfMin').value=XF();$('#goalKcal').value=S.goal||'';msg('');open('#mSet')};
-$('#setSave').onclick=()=>{try{localStorage.setItem(URLKEY,$('#gasUrl').value.trim())}catch(e){}S.xfer=Math.max(0,parseInt($('#xfMin').value)||5);S.goal=parseInt($('#goalKcal').value)||0;save();renderBus(false);renderMeal();msg('保存しました')};
+$('#gear').onclick=()=>{$('#gasUrl').value=gas();$('#xfMin').value=XF();fillGoals();msg('');open('#mSet')};
+$('#setSave').onclick=()=>{try{localStorage.setItem(URLKEY,$('#gasUrl').value.trim())}catch(e){}S.xfer=Math.max(0,parseInt($('#xfMin').value)||5);readGoals();save();renderBus(false);renderMeal();msg('保存しました')};
 $('#push').onclick=()=>{try{localStorage.setItem(URLKEY,$('#gasUrl').value.trim())}catch(e){}push()};
 $('#pull').onclick=()=>{try{localStorage.setItem(URLKEY,$('#gasUrl').value.trim())}catch(e){}pull()};
 
 /* ---------- 起動 ---------- */
 function migrate(){
+  if(!S.goals){S.goals=Object.assign({},DEF_GOALS);if(+S.goal>0)S.goals.kcal=+S.goal}
   if(!S.recs)S.recs=[]; if(!S.meals)S.meals=[];
   if(S.xfers&&S.xfers.length&&!S.recs.length){
     S.recs=S.xfers.map(x=>({id:uid(),ts:x.ts||0,date:x.date,busId:x.aId,leg:x.leg,actDep:'',actArr:x.actual||'',dd:null,da:null,crowd:0,xBusId:x.bId,xRes:x.ok?1:3}));
