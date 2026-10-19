@@ -89,7 +89,7 @@ input[type=time]{width:100%}
 .best{color:#16a34a;font-weight:700}.best .cr{box-shadow:0 0 0 2px #16a34a}
 .pick{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
 .pick .ic2{font-size:22px}.pick b{font-size:12px;color:var(--sub)}.pick .v{font-size:16px;font-weight:700}.pick .v small{font-weight:400;font-size:12px}
-body[data-tab=cmp] #fab,body[data-tab=set] #fab{display:none}
+body[data-tab=set] #fab{display:none}
 body[data-tab=meal] header{display:none}
 .ic.sm{width:30px;height:30px;font-size:14px;padding:0}
 .dsel.sm{padding:4px 12px;font-size:14px;border-radius:7px}
@@ -131,6 +131,21 @@ body[data-tab=meal] main{overflow:hidden;display:flex;flex-direction:column;padd
 body[data-tab=meal] #tab-meal.on{display:flex;flex-direction:column;flex:1;min-height:0}
 .stk{position:static;flex:none}
 #mScroll{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-bottom:90px}
+
+.gcard{padding:12px}
+.gh{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.gtt{font-weight:700;font-size:15px;word-break:break-all}
+.gbt{display:flex;gap:6px;align-items:center;flex:none}
+.gbt .btn{padding:5px 12px;font-size:13px;border-radius:16px}
+.gm{font-size:12px;color:var(--sub);margin-top:4px}
+.gd{font-size:12px;color:var(--sub);margin-top:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-wrap}
+.gt{display:grid;grid-template-columns:minmax(0,1fr) repeat(7,30px);gap:4px 3px;align-items:center;margin-top:10px}
+.gt .dh{text-align:center;font-size:10px;line-height:1.25;padding-bottom:2px}
+.gt .dh.today{font-weight:700;border-bottom:2px solid var(--pri)}
+.gt .an{font-size:13px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-all}
+.cell{width:28px;height:28px;border-radius:50%;border:2px solid var(--line);margin:auto;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700;background:transparent;padding:0}
+.cell.on{background:#16a34a;border-color:#16a34a}.cell.td:not(.on){border-color:var(--pri)}.cell.fut{opacity:.3}
+#gArc summary{font-weight:700;cursor:pointer}
 </style>
 </head>
 <body>
@@ -143,12 +158,14 @@ body[data-tab=meal] #tab-meal.on{display:flex;flex-direction:column;flex:1;min-h
    <div id="busBody"></div>
   </div>
  </section>
- <section class="tab" id="tab-cmp">
-  <div class="card">
-   <div class="seg" id="cmpSeg"><button data-l="o1">行き①</button><button data-l="o2">行き②</button><button data-l="r1">帰り①</button><button data-l="r2">帰り②</button></div>
-   <label class="row" style="justify-content:flex-end"><input type="checkbox" id="cmpUp" checked><small>これから乗れる便のみ</small></label>
-   <div id="cmpBody"></div>
+ <section class="tab" id="tab-goal">
+  <div class="row" style="justify-content:space-between;margin-bottom:8px">
+   <button class="ic sm" id="gwPrev">‹</button>
+   <div id="gwTxt0" style="text-align:center;cursor:pointer"><b id="gwTxt"></b><div><small id="gwSub"></small></div></div>
+   <button class="ic sm" id="gwNext">›</button>
   </div>
+  <div id="gList"></div>
+  <details id="gArc" class="card"><summary></summary><div id="gArcList" style="margin-top:8px"></div></details>
  </section>
  <section class="tab" id="tab-meal">
   <div class="stk"><div class="card">
@@ -193,7 +210,7 @@ body[data-tab=meal] #tab-meal.on{display:flex;flex-direction:column;flex:1;min-h
 <button id="fab">＋</button>
 <nav>
  <button data-t="bus" class="on"><span>🚌</span>バス</button>
- <button data-t="cmp"><span>📊</span>比較</button>
+ <button data-t="goal"><span>🎯</span>目標</button>
  <button data-t="meal"><span>🍽</span>食事</button>
  <button data-t="todo"><span>✅</span>やること</button>
  <button data-t="set"><span>⚙️</span>設定</button>
@@ -234,6 +251,20 @@ body[data-tab=meal] #tab-meal.on{display:flex;flex-direction:column;flex:1;min-h
  <h3 id="dT"></h3><div id="dBody"></div>
  <div class="acts"><button class="btn" id="dEdit">便を編集</button><button class="btn p" id="dRec">記録する</button></div>
  <div class="acts"><button class="btn" data-close>閉じる</button></div>
+</div></div>
+
+<!-- 目標モーダル -->
+<div class="mask" id="mGoal"><div class="modal">
+ <h3 id="gmT">目標を登録</h3>
+ <label>目標のタイトル</label><input type="text" id="gTitle" placeholder="例：年内に体重60kgにする">
+ <label>詳細（任意）</label><textarea id="gDetail" style="min-height:70px" placeholder="なぜ達成したいか、達成の基準など"></textarea>
+ <label>期限（任意）</label>
+ <div class="row"><input type="date" id="gDue"><label class="row" style="margin:0;white-space:nowrap"><input type="checkbox" id="gNoDue" checked> 期限なし</label></div>
+ <label>毎日の行動（最大3つ）</label>
+ <input type="text" id="gA1" placeholder="例：1日の摂取カロリーを1,600kcal以内にする" style="margin-bottom:6px">
+ <input type="text" id="gA2" style="margin-bottom:6px">
+ <input type="text" id="gA3">
+ <div class="acts"><button class="btn d" id="gDel">削除</button><button class="btn" data-close>キャンセル</button><button class="btn p" id="gSave">保存</button></div>
 </div></div>
 
 <!-- 食事モーダル -->
@@ -299,7 +330,7 @@ document.addEventListener('touchmove',e=>{
 },{passive:false});
 const uid=()=>Math.random().toString(36).slice(2,10);
 const KEY='myDash.v1', URLKEY='myDash.gas';
-let S={buses:[],xfers:[],recs:[],meals:[],todos:[]}, ui={day:null,pri:'B',editStop:null,editTodo:null};
+let S={buses:[],xfers:[],recs:[],meals:[],gl:[],chk:{},todos:[]}, ui={day:null,pri:'B',editStop:null,editTodo:null};
 
 /* ---------- 保存・同期 ---------- */
 try{const r=localStorage.getItem(KEY); if(r) S=Object.assign(S,JSON.parse(r));}catch(e){}
@@ -317,7 +348,7 @@ async function push(){
 async function pull(){
   if(!gas()) return msg('URL未設定');
   try{const r=await fetch(gas()); const d=await r.json();
-    if(d&&(d.stops||d.todos)){S=Object.assign({buses:[],xfers:[],recs:[],meals:[],todos:[]},d);try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}renderAll();msg('読み込みました')}
+    if(d&&(d.stops||d.todos)){S=Object.assign({buses:[],xfers:[],recs:[],meals:[],gl:[],chk:{},todos:[]},d);try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}renderAll();msg('読み込みました')}
     else msg('シートにデータがありません');
   }catch(e){msg('読込失敗: '+e.message)}
 }
@@ -331,7 +362,7 @@ $$('nav button').forEach(b=>b.onclick=()=>{
   $$('nav button').forEach(x=>x.classList.toggle('on',x===b));
   $$('.tab').forEach(t=>t.classList.toggle('on',t.id==='tab-'+b.dataset.t));
   document.body.classList.toggle('todo-on',b.dataset.t==='todo');
-  $('#ttl').textContent=({bus:'🚌 バス時刻表',cmp:'📊 便の比較',meal:'食事記録',set:'⚙️ 設定',todo:'✅ やることリスト'})[b.dataset.t];document.body.dataset.tab=b.dataset.t;if(b.dataset.t==='cmp')renderCmp();if(b.dataset.t==='meal')renderMeal();if(b.dataset.t==='set')fillSettings();
+  $('#ttl').textContent=({bus:'🚌 バス時刻表',goal:'🎯 目標管理',meal:'食事記録',set:'⚙️ 設定',todo:'✅ やることリスト'})[b.dataset.t];document.body.dataset.tab=b.dataset.t;if(b.dataset.t==='goal')renderGoal();if(b.dataset.t==='meal')renderMeal();if(b.dataset.t==='set')fillSettings();
   if(b.dataset.t==='bus') scrollNext();
 });
 
@@ -375,7 +406,6 @@ function renderBus(f=true){
   }
   $('#busBody').innerHTML=h;
   const id=nx?nx.id:null; if(f||ui.lastNx!==id) scrollNext(); ui.lastNx=id;
-  renderCmp();
 }
 function scrollNext(){setTimeout(()=>{const e=$('.tm.nx');if(e&&$('#tab-bus').classList.contains('on'))e.scrollIntoView({block:'center',behavior:'smooth'})},80)}
 $('#legSeg').onclick=e=>{const b=e.target.closest('button');if(b){ui.leg=b.dataset.l;renderBus()}};
@@ -490,53 +520,88 @@ $('#bSave').onclick=()=>saveBus(false);
 $('#bSave2').onclick=()=>saveBus(true);
 $('#bDel').onclick=()=>{if(confirm('この便と記録を削除しますか？')){S.buses=S.buses.filter(x=>x.id!==ui.editBus);S.recs=S.recs.filter(r=>r.busId!==ui.editBus);save();close();renderBus(false)}};
 
-/* ---------- 便の比較 ---------- */
-const fM=m=>{m=Math.round(m);return Math.floor(m/60)+':'+String(m%60).padStart(2,'0')};
-function bstats(b){
-  const rs=recsOf(b.id), avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
-  const rides=rs.filter(r=>r.actDep&&r.actArr).map(r=>toMin(r.actArr)-toMin(r.actDep)).filter(v=>v>0);
-  const da=avg(rs.map(r=>r.da).filter(v=>v!=null));
-  const cr=rs.map(r=>r.crowd).filter(v=>v>0), xs=rs.filter(r=>r.xRes>0);
-  const sched=(b.arr&&toMin(b.dep)!==null)?toMin(b.arr)-toMin(b.dep):null, ride=avg(rides);
-  return {n:rs.length,ride:ride!=null?ride:sched,rideReal:ride!=null,da,
-    arrE:b.arr?toMin(b.arr)+(da||0):null,
-    crowd:cr.length?avg(cr):(+b.crowd>0?+b.crowd:null),crowdReal:cr.length>0,cn:cr.length,
-    xn:xs.length,xok:xs.length?xs.filter(r=>r.xRes<=2).length/xs.length:null};
+/* ---------- 目標管理 ---------- */
+const G_MAX=5;
+const mondayOf=s=>{const d=new Date(s+'T00:00:00');d.setDate(d.getDate()-((d.getDay()+6)%7));return fmtD(d)};
+const chkHas=(aid,d)=>(S.chk[aid]||[]).includes(d);
+const ymd=d=>d.replace(/-/g,'/');
+function dueTxt(g){
+  if(!g.due) return '期限なし';
+  const n=Math.round((new Date(g.due+'T00:00:00')-new Date(todayStr()+'T00:00:00'))/864e5);
+  if(n<0) return `<b style="color:var(--red)">期限 ${ymd(g.due)}（${-n}日超過）</b>`;
+  if(n===0) return `<b style="color:var(--red)">期限 ${ymd(g.due)}（今日）</b>`;
+  return `<span ${n<=7?'style="color:#ea580c;font-weight:700"':''}>期限 ${ymd(g.due)}（あと${n}日）</span>`;
 }
-function renderCmp(){
-  ui.cmpLeg=ui.cmpLeg||ui.leg||(new Date().getHours()<12?'o1':'r1');
-  $$('#cmpSeg button').forEach(x=>x.classList.toggle('on',x.dataset.l===ui.cmpLeg));
-  const now=new Date(), nm=now.getHours()*60+now.getMinutes(), up=$('#cmpUp').checked, L=LEGS[ui.cmpLeg], tx=!!NEXT[ui.cmpLeg];
-  let list=byDep(S.buses.filter(b=>b.leg===ui.cmpLeg)); if(up) list=list.filter(b=>toMin(b.dep)>=nm);
-  const head=`<div class="route"><b>${L.f}</b> → <b>${L.t}</b></div>`;
-  if(!list.length){ $('#cmpBody').innerHTML=head+'<div class="empty">'+(up?'これから乗れる便がありません。<br>「これから乗れる便のみ」を外すと全便を比較できます。':'便が未登録です。')+'</div>'; return }
-  const rows=list.map(b=>({b,s:bstats(b)}));
-  const minBy=(k,arr=rows)=>{const v=arr.filter(r=>r.s[k]!=null);return v.length?v.reduce((a,c)=>c.s[k]<a.s[k]?c:a):null};
-  const early=minBy('arrE'), seat=minBy('crowd'), fast=minBy('ride',rows.some(r=>r.s.rideReal)?rows.filter(r=>r.s.rideReal):rows);
-  const xr=rows.filter(r=>r.s.xok!=null), xf=xr.length?xr.reduce((a,c)=>(c.s.xok>a.s.xok||(c.s.xok===a.s.xok&&c.s.xn>a.s.xn))?c:a):null;
-  const pick=(ic,t,v)=>`<div class="pick"><span class="ic2">${ic}</span><div><b>${t}</b><div class="v">${v||'<small>データなし</small>'}</div></div></div>`;
-  let h=head;
-  h+=pick('⏱','早く着きたい',early&&`${fT(early.b.dep)}発 <small>→ ${fM(early.s.arrE)}着の目安${early.s.da!=null?'':'（定刻）'}</small>`);
-  h+=pick('💺','座りたい',seat&&`${fT(seat.b.dep)}発 <small>${CROWD[Math.round(seat.s.crowd)]}${seat.s.crowdReal?'（記録'+seat.s.cn+'件）':'（予想）'}</small>`);
-  if(tx) h+=pick('🔁','乗り換え確実',xf&&`${fT(xf.b.dep)}発 <small>成功率${Math.round(xf.s.xok*100)}%（${xf.s.xn}件）</small>`);
-  const cls=tx?'g5':'g4', best=(r,x)=>x&&x.b.id===r.b.id?' best':'';
-  h+=`<div class="route" style="margin-top:14px">全便の比較（タップで詳細）</div><div class="cmpr hd ${cls}"><span>発車</span><span>乗車</span><span>到着目安</span><span>混雑</span>${tx?'<span>乗継</span>':''}</div>`;
-  rows.forEach(r=>{
-    const {b,s}=r, ci=s.crowd!=null?Math.round(s.crowd):0;
-    h+=`<div class="cmpr ${cls} ${toMin(b.dep)<nm?'past':''}" data-id="${b.id}">`
-     +`<span><b>${fT(b.dep)}</b><small>${s.n?s.n+'件':'記録なし'}</small></span>`
-     +`<span class="${s.rideReal?'':'est'}${best(r,fast)}">${s.ride!=null?(s.rideReal?'':'~')+Math.round(s.ride)+'分':'--'}</span>`
-     +`<span class="${best(r,early).trim()}">${s.arrE!=null?fM(s.arrE)+(s.da!=null?`<small>(${sd(Math.round(s.da))})</small>`:''):'--'}</span>`
-     +`<span class="${best(r,seat).trim()}">${ci?`<span class="cr c${ci}" ${s.crowdReal?'':'style="opacity:.55"'}>${s.crowdReal?'':'予 '}${CROWD[ci]}</span>`:'--'}</span>`
-     +(tx?`<span class="${best(r,xf).trim()}">${s.xok!=null?Math.round(s.xok*100)+'%<small>('+s.xn+'件)</small>':'--'}</span>`:'')
-     +'</div>';
-  });
-  h+='<div style="margin-top:8px"><small>乗車・到着は記録の平均（~は定刻、予は予想）。緑は各項目でいちばん良い便。記録が少ないうちは目安です。乗継は、その便の記録に基づく成功率です。</small></div>';
-  $('#cmpBody').innerHTML=h;
+function streak(g){
+  if(!g.acts.length) return 0;
+  const all=x=>g.acts.every(a=>chkHas(a.id,x));
+  let d=todayStr(), n=0; if(!all(d)) d=addD(d,-1);
+  while(n<3650&&d>=(g.created||'0000')&&all(d)){n++;d=addD(d,-1)}
+  return n;
 }
-$('#cmpSeg').onclick=e=>{const b=e.target.closest('button');if(b){ui.cmpLeg=b.dataset.l;renderCmp()}};
-$('#cmpUp').onchange=renderCmp;
-$('#cmpBody').onclick=e=>{const r=e.target.closest('[data-id]');if(r)openDet(r.dataset.id)};
+function renderGoal(){
+  const td=todayStr(); ui.gw=ui.gw||mondayOf(td);
+  const days=[...Array(7)].map((_,i)=>addD(ui.gw,i)), act=S.gl.filter(g=>!g.done), arc=S.gl.filter(g=>g.done);
+  const f=d=>d.slice(5).replace('-','/');
+  $('#gwTxt').textContent=f(days[0])+' 〜 '+f(days[6])+(ui.gw===mondayOf(td)?'（今週）':'');
+  $('#gwSub').textContent=`進行中の目標 ${act.length}/${G_MAX}`;
+  const head=days.map(d=>{
+    const [y,m,dd]=d.split('-').map(Number), w=new Date(y,m-1,dd).getDay(), h=holSet(y).has(m*100+dd);
+    const c=(w===0||h)?'var(--red)':w===6?'var(--pri)':'var(--sub)';
+    return `<div class="dh ${d===td?'today':''}" style="color:${c}">${'日月火水木金土'[w]}<br>${dd}</div>`;
+  }).join('');
+  const rows=g=>g.acts.map(a=>`<div class="an">${esc(a.name)}</div>`+days.map(d=>{
+    const on=chkHas(a.id,d);
+    return `<button class="cell ${on?'on':''} ${d>td?'fut':''} ${d===td?'td':''}" data-a="${a.id}" data-d="${d}" ${d>td?'disabled':''}>${on?'✓':''}</button>`;
+  }).join('')).join('');
+  $('#gList').innerHTML=act.length?act.map(g=>{
+    const past=days.filter(d=>d<=td), poss=g.acts.length*past.length, done=g.acts.reduce((n,a)=>n+past.filter(d=>chkHas(a.id,d)).length,0), st=streak(g);
+    return `<div class="card gcard"><div class="gh"><div class="gtt">${esc(g.title)}</div><div class="gbt"><button class="btn p rb" data-gok="${g.id}">達成</button><button class="ic sm" data-ged="${g.id}">✎</button></div></div>`
+      +`<div class="gm">${dueTxt(g)}${poss?`　今週 ${Math.round(done/poss*100)}%（${done}/${poss}）`:''}${st?`　連続 ${st}日`:''}</div>`
+      +(g.detail?`<div class="gd">${esc(g.detail)}</div>`:'')
+      +(g.acts.length?`<div class="gt"><div></div>${head}${rows(g)}</div>`:'<div class="gd">毎日の行動が未登録です。右上の✎から追加できます。</div>')+'</div>';
+  }).join(''):'<div class="empty">目標がまだありません。<br>右下の「＋」から、最初の目標を登録しましょう。<br><small>同時に進められるのは、最大'+G_MAX+'つです。</small></div>';
+  $('#gArc summary').textContent=`アーカイブ（${arc.length}）`;
+  $('#gArcList').innerHTML=arc.length?arc.slice().sort((a,b)=>(b.doneDate||'')>(a.doneDate||'')?1:-1).map(g=>
+    `<div class="xfr"><div class="row" style="justify-content:space-between"><div><b>${esc(g.title)}</b><div><small>達成 ${ymd(g.doneDate||'')}${g.due?'　期限 '+ymd(g.due):''}</small></div></div><div class="row"><button class="ic sm" data-grs="${g.id}">↩</button><button class="ic sm" data-gdl="${g.id}">🗑</button></div></div></div>`).join('')
+    :'<div class="empty" style="padding:14px">達成した目標が、ここに保存されます。</div>';
+}
+$('#gwPrev').onclick=()=>{ui.gw=addD(ui.gw,-7);renderGoal()};
+$('#gwNext').onclick=()=>{ui.gw=addD(ui.gw,7);renderGoal()};
+$('#gwTxt0').onclick=()=>{ui.gw=mondayOf(todayStr());renderGoal()};
+$('#tab-goal').addEventListener('click',e=>{
+  const c=e.target.closest('.cell');
+  if(c){ if(c.disabled) return; const l=S.chk[c.dataset.a]||(S.chk[c.dataset.a]=[]), i=l.indexOf(c.dataset.d); i<0?l.push(c.dataset.d):l.splice(i,1); save(); return renderGoal(); }
+  const ok=e.target.closest('[data-gok]'), ed=e.target.closest('[data-ged]'), rs=e.target.closest('[data-grs]'), dl=e.target.closest('[data-gdl]');
+  if(ok){const g=S.gl.find(x=>x.id===ok.dataset.gok); if(confirm('「'+g.title+'」を達成済みにして、アーカイブしますか？')){g.done=true;g.doneDate=todayStr();save();renderGoal()}}
+  if(ed) openGoal(ed.dataset.ged);
+  if(rs){ if(S.gl.filter(x=>!x.done).length>=G_MAX) return alert('進行中の目標が上限（'+G_MAX+'つ）です。'); const g=S.gl.find(x=>x.id===rs.dataset.grs); g.done=false;g.doneDate='';save();renderGoal() }
+  if(dl) delGoal(dl.dataset.gdl);
+});
+function delGoal(id){
+  const g=S.gl.find(x=>x.id===id); if(!g||!confirm('「'+g.title+'」と、その記録を削除しますか？')) return false;
+  g.acts.forEach(a=>delete S.chk[a.id]); S.gl=S.gl.filter(x=>x.id!==id); save(); close(); renderGoal(); return true;
+}
+$('#gDue').oninput=()=>{$('#gNoDue').checked=!$('#gDue').value};
+$('#gNoDue').onchange=()=>{if($('#gNoDue').checked)$('#gDue').value=''};
+function openGoal(id){
+  if(!id&&S.gl.filter(x=>!x.done).length>=G_MAX) return alert('同時に進められる目標は最大'+G_MAX+'つです。達成済みにするか、削除してから追加してください。');
+  ui.gEdit=id; const g=S.gl.find(x=>x.id===id)||{title:'',detail:'',due:'',acts:[]};
+  ui.gAct=g.acts.map(a=>a.id);
+  $('#gmT').textContent=id?'目標を編集':'目標を登録';
+  $('#gTitle').value=g.title; $('#gDetail').value=g.detail||''; $('#gDue').value=g.due||''; $('#gNoDue').checked=!g.due;
+  [1,2,3].forEach(i=>$('#gA'+i).value=(g.acts[i-1]||{}).name||'');
+  $('#gDel').style.display=id?'':'none'; open('#mGoal');
+}
+$('#gSave').onclick=()=>{
+  const title=$('#gTitle').value.trim(); if(!title) return alert('目標のタイトルを入力してください');
+  const acts=[];
+  [1,2,3].forEach(i=>{const n=$('#gA'+i).value.trim(), old=ui.gAct[i-1]; if(n) acts.push({id:old||uid(),name:n}); else if(old) delete S.chk[old]});
+  const d={title,detail:$('#gDetail').value.trim(),due:$('#gNoDue').checked?'':$('#gDue').value,acts};
+  if(ui.gEdit) Object.assign(S.gl.find(x=>x.id===ui.gEdit),d); else S.gl.push({id:uid(),ts:Date.now(),created:todayStr(),done:false,doneDate:'',...d});
+  save(); close(); renderGoal();
+};
+$('#gDel').onclick=()=>delGoal(ui.gEdit);
 
 /* ---------- やることリスト ---------- */
 const todayStr=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
@@ -570,7 +635,7 @@ function openTodo(id){
   $('#tTitle').value=t.title;$('#tCat').value=t.cat;$('#tBody').value=t.body;$('#tDue').value=t.due||'';$('#tNoDue').checked=!t.due;
   setPri(t.pri);$('#tDel').style.display=id?'':'none';open('#mTodo');
 }
-$('#fab').onclick=()=>{const t=document.body.dataset.tab||'bus';t==='todo'?openTodo(null):t==='meal'?openMeal(null):openBus(null)};
+$('#fab').onclick=()=>{const t=document.body.dataset.tab||'bus';t==='todo'?openTodo(null):t==='meal'?openMeal(null):t==='goal'?openGoal(null):openBus(null)};
 $('#tSave').onclick=()=>{
   const title=$('#tTitle').value.trim(); if(!title) return alert('タイトルを入力してください');
   const d={title,pri:ui.pri,cat:$('#tCat').value.trim(),body:$('#tBody').value,due:$('#tNoDue').checked?'':$('#tDue').value};
@@ -797,13 +862,14 @@ $('#pull').onclick=()=>{setUrl();pull()};
 /* ---------- 起動 ---------- */
 function migrate(){
   if(!S.goals){S.goals=Object.assign({},DEF_GOALS);if(+S.goal>0)S.goals.kcal=+S.goal}
+  if(!S.gl)S.gl=[]; if(!S.chk)S.chk={};
   if(!S.recs)S.recs=[]; if(!S.meals)S.meals=[];
   if(S.xfers&&S.xfers.length&&!S.recs.length){
     S.recs=S.xfers.map(x=>({id:uid(),ts:x.ts||0,date:x.date,busId:x.aId,leg:x.leg,actDep:'',actArr:x.actual||'',dd:null,da:null,crowd:0,xBusId:x.bId,xRes:x.ok?1:3}));
     S.xfers=[]; save();
   }
 }
-function renderAll(){migrate();renderBus();renderTodo();renderMeal();fillSettings()}
+function renderAll(){migrate();renderBus();renderGoal();renderTodo();renderMeal();fillSettings()}
 renderAll();
 if(gas()) pull();
 setInterval(()=>renderBus(false),30000);
