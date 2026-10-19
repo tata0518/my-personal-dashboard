@@ -105,11 +105,23 @@ body[data-tab=meal] header{display:none}
 .thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}.th{position:relative;width:60px;height:60px}.th img{width:100%;height:100%;object-fit:cover;border-radius:8px}.th button{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;border:0;background:var(--red);color:#fff;font-size:12px;line-height:20px;padding:0}
 .nb{margin-top:10px}.nh{display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px}.nh small{color:var(--sub);font-size:11px}
 .pb2{position:relative;height:14px;background:var(--bg);border-radius:7px;overflow:hidden}.pb2 i{position:absolute;top:0;bottom:0}.pb2 u{position:absolute;top:0;bottom:0;width:2px;background:var(--tx);opacity:.75}
-.stk{position:sticky;top:0;z-index:4;background:var(--bg);padding:8px 0 8px}.stk .card{margin-bottom:0}
+.stk{position:sticky;top:0;z-index:4;background:var(--bg);padding:0 0 8px}.stk .card{margin-bottom:0}
 .dsel{position:relative;display:inline-block;padding:9px 16px;background:var(--bg);border:1px solid var(--line);border-radius:8px;font-weight:700}
 .dsel input{position:absolute;inset:0;opacity:0;width:100%;height:100%}
 .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
 .nb,[data-nut]{cursor:pointer}
+#mList .card{padding:6px 12px 4px;margin-bottom:6px}
+#mList .mh{font-size:12px;margin-bottom:0;padding-bottom:3px}
+#mList .meal{font-size:12px;padding:4px 0;gap:8px;line-height:1.35}
+#mList .meal .k{font-size:12px}
+#mList .meal small{font-size:11px}
+.mh{font-size:13px}
+.meal{font-size:13px;padding:7px 0;align-items:flex-start}
+.meal:last-child{padding-bottom:0}
+.meal .k{font-weight:400}
+.pfw{display:flex;justify-content:flex-end;gap:8px;margin-top:4px}
+.pf{display:inline-flex;align-items:center;gap:3px;font-size:12px;color:var(--tx)}
+.pf i{width:16px;height:16px;border-radius:50%;color:#fff;font-style:normal;font-size:10px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
 </style>
 </head>
 <body>
@@ -608,13 +620,14 @@ function barHtml(val,goal,type,sc,col){
 function stText(val,goal,type,u){
   if(!goal) return '';
   const d=u==='kcal'?Math.round(val-goal):Math.round((val-goal)*10)/10;
-  if(type==='max') return d>0?`<b style="color:${val>goal*1.2?'#dc2626':'#ea580c'}">＋${d} 超過</b>`:`<span style="color:var(--sub)">残り ${-d}</span>`;
-  return d>=0?`<b style="color:#16a34a">達成</b>`:`<span style="color:var(--sub)">あと ${-d}</span>`;
+  if(type==='max') return d>0?`<b style="color:${val>goal*1.2?'#dc2626':'#ea580c'}">＋${d} 超過</b>`:`<span style="color:var(--sub)">残り ${-d} ${u}</span>`;
+  return d>=0?`<b style="color:#16a34a">達成</b>`:`<span style="color:var(--sub)">あと ${-d} ${u}</span>`;
 }
 function nutBar(label,val,goal,type,sc,col,key){
-  return `<div class="nb" data-nut="${key}"><div class="nh"><span>${col?`<i class="dot" style="background:${col}"></i>`:''}${label}<small>${goal?(type==='min'?'（以上）':'（以内）'):''}</small></span><span>${val}${goal?' / '+goal:''} g　${stText(val,goal,type,'g')}</span></div>${barHtml(val,goal,type,sc,col)}</div>`;
+  return `<div class="nb" data-nut="${key}"><div class="nh"><span>${col?`<i class="dot" style="background:${col}"></i>`:''}${label}</span><span>${val}${goal?' / '+goal:''} g　${stText(val,goal,type,'g')}</span></div>${barHtml(val,goal,type,sc,BARCOL[key]||col)}</div>`;
 }
 const NCOL={p:'#ef4444',f:'#eab308',c:'#22c55e'};
+const BARCOL={p:'#ef4444',f:'#eab308',c:'#22c55e',fiber:'#9ca3af',salt:'#9ca3af'};
 const NMETA={kcal:['カロリー','max','kcal'],p:['たんぱく質','min','g'],f:['脂質','max','g'],c:['炭水化物','max','g'],fiber:['食物繊維','min','g'],salt:['塩分','max','g']};
 const SLOTS=[['朝','朝食'],['昼','昼食'],['夕','夕食'],['間','間食']];
 const fmtD=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
@@ -623,7 +636,7 @@ const num=v=>Math.round((parseFloat(v)||0)*10)/10;
 const sum=(a,k)=>Math.round(a.reduce((t,m)=>t+(+m[k]||0),0)*10)/10;
 const defSlot=()=>{const h=new Date().getHours();return h<10?'朝':h<15?'昼':h<17?'間':h<22?'夕':'間'};
 function trendChart(key,type,col){
-  const days=[...Array(7)].map((_,i)=>addD(ui.mDay,i-6)), goal=G()[key]||0, own=!!NCOL[key];
+  const days=[...Array(7)].map((_,i)=>addD(ui.mDay,i-6)), goal=G()[key]||0, own=!!BARCOL[key];
   const v=days.map(d=>sum(S.meals.filter(m=>m.date===d),key)), mx=Math.max(goal*1.25,...v,1);
   const W=320,H=150,b=125,k=95/mx,st=W/7, fm=x=>String(Math.round(x*(key==='kcal'?1:10))/(key==='kcal'?1:10));
   let s=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block">`;
@@ -647,7 +660,7 @@ function openNut(key){
   const days=[...Array(7)].map((_,i)=>addD(ui.mDay,i-6)), rec=days.filter(d=>S.meals.some(m=>m.date===d));
   const avg=rec.length?rec.reduce((a,d)=>a+sum(S.meals.filter(m=>m.date===d),key),0)/rec.length:0;
   $('#nT').textContent=label+'　直近7日';
-  $('#nBody').innerHTML=`<div class="route">${goal?'目標 '+goal+' '+u+(type==='min'?' 以上':' 以内'):'目標なし'}${rec.length?'　／　記録のある日の平均 '+(key==='kcal'?Math.round(avg):Math.round(avg*10)/10)+' '+u:''}</div>`+trendChart(key,type,NCOL[key]||'var(--pri)');
+  $('#nBody').innerHTML=`<div class="route">${goal?'目標 '+goal+' '+u+(type==='min'?' 以上':' 以内'):'目標なし'}${rec.length?'　／　記録のある日の平均 '+(key==='kcal'?Math.round(avg):Math.round(avg*10)/10)+' '+u:''}</div>`+trendChart(key,type,BARCOL[key]||'var(--pri)');
   open('#mNut');
 }
 $('#mTotal').onclick=e=>{const n=e.target.closest('[data-nut]');if(n)openNut(n.dataset.nut)};
@@ -670,14 +683,14 @@ function renderDateTxt(day){
 function renderMeal(){
   const day=ui.mDay=ui.mDay||todayStr(); $('#mDate').value=day; renderDateTxt(day);
   const ms=S.meals.filter(m=>m.date===day), goal=G().kcal, k=sum(ms,'kcal'), g=G(), sc=Math.max(100,goal?k/goal*100:0,...NUT.map(([x])=>g[x]?sum(ms,x)/g[x]*100:0));
-  $('#mTotal').innerHTML=`<div data-nut="kcal"><div style="margin:10px 0 6px"><span style="font-size:30px;font-weight:700">${Math.round(k).toLocaleString()}</span> kcal${goal?`　<small>目標 ${goal}　</small>${stText(k,goal,'max','kcal')}`:''}</div>`
+  $('#mTotal').innerHTML=`<div data-nut="kcal"><div style="margin:10px 0 6px"><span style="font-size:30px;font-weight:700">${Math.round(k).toLocaleString()}</span> kcal${goal?`　<small>目標 ${goal} kcal　</small>${stText(k,goal,'max','kcal')}`:''}</div>`
     +(goal?barHtml(k,goal,'max',sc):'')+'</div>'
     +NUT.map(([k,l,t])=>nutBar(l,sum(ms,k),g[k],t,sc,NCOL[k],k)).join('');
   let h='';
   SLOTS.forEach(([key,label])=>{
     const l=ms.filter(m=>m.slot===key).sort((a,b)=>a.ts-b.ts); if(!l.length) return;
     h+=`<div class="card"><div class="mh"><span>${label}</span><span>${Math.round(sum(l,'kcal'))} kcal</span></div>`
-      +l.map(m=>`<div class="meal" data-mid="${m.id}"><div>${esc(m.name)}</div><div class="k">${Math.round(m.kcal)} kcal<small><span style="color:#dc2626">P${m.p}</span> <span style="color:#ca8a04">F${m.f}</span> <span style="color:#16a34a">C${m.c}</span></small></div></div>`).join('')+'</div>';
+      +l.map(m=>`<div class="meal" data-mid="${m.id}"><div>${esc(m.name)}</div><div class="k">${Math.round(m.kcal)} kcal<div class="pfw"><span class="pf"><i style="background:#ef4444">P</i>${m.p}</span><span class="pf"><i style="background:#eab308">F</i>${m.f}</span><span class="pf"><i style="background:#22c55e">C</i>${m.c}</span></div></div></div>`).join('')+'</div>';
   });
   $('#mList').innerHTML=h||'<div class="empty">この日の記録はありません。<br>右下の「＋」から、写真や栄養成分のスクショを登録できます。</div>';
   $('#mChart').innerHTML=mealChart();
