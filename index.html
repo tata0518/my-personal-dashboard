@@ -105,7 +105,7 @@ body[data-tab=meal] header{display:none}
 .thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}.th{position:relative;width:60px;height:60px}.th img{width:100%;height:100%;object-fit:cover;border-radius:8px}.th button{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;border:0;background:var(--red);color:#fff;font-size:12px;line-height:20px;padding:0}
 .nb{margin-top:10px}.nh{display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px}.nh small{color:var(--sub);font-size:11px}
 .pb2{position:relative;height:14px;background:var(--bg);border-radius:7px;overflow:hidden}.pb2 i{position:absolute;top:0;bottom:0}.pb2 u{position:absolute;top:0;bottom:0;width:2px;background:var(--tx);opacity:.75}
-.stk{position:sticky;top:0;z-index:4;background:var(--bg);padding:0 0 8px}.stk .card{margin-bottom:0}
+.stk{position:sticky;top:0;z-index:4;background:var(--bg);padding:10px 0 8px}.stk .card{margin-bottom:0}
 .dsel{position:relative;display:inline-block;padding:9px 16px;background:var(--bg);border:1px solid var(--line);border-radius:8px;font-weight:700}
 .dsel input{position:absolute;inset:0;opacity:0;width:100%;height:100%}
 .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
@@ -122,6 +122,11 @@ body[data-tab=meal] header{display:none}
 .pfw{display:flex;justify-content:flex-end;gap:8px;margin-top:4px}
 .pf{display:inline-flex;align-items:center;gap:3px;font-size:12px;color:var(--tx)}
 .pf i{width:16px;height:16px;border-radius:50%;color:#fff;font-style:normal;font-size:10px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
+.nb2{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;margin-top:10px}.nb2 .nh{margin-bottom:3px}.ns{text-align:right;font-size:11px;margin-top:3px;min-height:14px}
+*{touch-action:manipulation}
+html,body{overflow:hidden;overscroll-behavior:none}
+body{position:fixed;inset:0;width:100%;height:auto}
+main{overscroll-behavior:contain;-webkit-overflow-scrolling:touch;min-height:0}
 </style>
 </head>
 <body>
@@ -626,6 +631,9 @@ function stText(val,goal,type,u){
 function nutBar(label,val,goal,type,sc,col,key){
   return `<div class="nb" data-nut="${key}"><div class="nh"><span>${col?`<i class="dot" style="background:${col}"></i>`:''}${label}</span><span>${val}${goal?' / '+goal:''} g　${stText(val,goal,type,'g')}</span></div>${barHtml(val,goal,type,sc,BARCOL[key]||col)}</div>`;
 }
+function nutHalf(label,val,goal,type,sc,key){
+  return `<div data-nut="${key}"><div class="nh"><span>${label}</span><span>${val}${goal?' / '+goal:''} g</span></div>${barHtml(val,goal,type,sc,BARCOL[key])}<div class="ns">${stText(val,goal,type,'g')}</div></div>`;
+}
 const NCOL={p:'#ef4444',f:'#eab308',c:'#22c55e'};
 const BARCOL={p:'#ef4444',f:'#eab308',c:'#22c55e',fiber:'#9ca3af',salt:'#9ca3af'};
 const NMETA={kcal:['カロリー','max','kcal'],p:['たんぱく質','min','g'],f:['脂質','max','g'],c:['炭水化物','max','g'],fiber:['食物繊維','min','g'],salt:['塩分','max','g']};
@@ -685,7 +693,7 @@ function renderMeal(){
   const ms=S.meals.filter(m=>m.date===day), goal=G().kcal, k=sum(ms,'kcal'), g=G(), sc=Math.max(100,goal?k/goal*100:0,...NUT.map(([x])=>g[x]?sum(ms,x)/g[x]*100:0));
   $('#mTotal').innerHTML=`<div data-nut="kcal"><div style="margin:10px 0 6px"><span style="font-size:30px;font-weight:700">${Math.round(k).toLocaleString()}</span> kcal${goal?`　<small>目標 ${goal} kcal　</small>${stText(k,goal,'max','kcal')}`:''}</div>`
     +(goal?barHtml(k,goal,'max',sc):'')+'</div>'
-    +NUT.map(([k,l,t])=>nutBar(l,sum(ms,k),g[k],t,sc,NCOL[k],k)).join('');
+    +NUT.filter(x=>NCOL[x[0]]).map(([k,l,t])=>nutBar(l,sum(ms,k),g[k],t,sc,NCOL[k],k)).join('')+'<div class="nb2">'+NUT.filter(x=>!NCOL[x[0]]).map(([k,l,t])=>nutHalf(l,sum(ms,k),g[k],t,sc,k)).join('')+'</div>';
   let h='';
   SLOTS.forEach(([key,label])=>{
     const l=ms.filter(m=>m.slot===key).sort((a,b)=>a.ts-b.ts); if(!l.length) return;
