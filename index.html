@@ -132,11 +132,6 @@ body[data-tab=meal] #tab-meal.on{display:flex;flex-direction:column;flex:1;min-h
 .stk{position:static;flex:none}
 #mScroll{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-bottom:90px}
 
-/* バス用スクロールレイアウトの修正 */
-body[data-tab=bus] main{overflow:hidden;display:flex;flex-direction:column;padding:0 12px 0}
-body[data-tab=bus] #tab-bus.on{display:flex;flex-direction:column;flex:1;min-height:0;height:100%}
-#busScroll{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-bottom:120px;-webkit-overflow-scrolling:touch}
-
 .gcard{padding:12px}
 .gh{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
 .gtt{font-weight:700;font-size:15px;word-break:break-all}
@@ -161,14 +156,11 @@ body[data-tab=bus] #tab-bus.on{display:flex;flex-direction:column;flex:1;min-hei
 <header><span id="ttl">🚌 バス時刻表</span></header>
 <main>
  <section class="tab on" id="tab-bus">
-  <div style="flex:none;">
-    <div class="card" style="margin-bottom:8px;"><a class="link" target="_blank" rel="noopener" href="https://www.kotsu.metro.tokyo.jp/bus/unkou/">🔗 都営バス 運行情報を見る</a></div>
-    <div class="card" style="margin-bottom:8px;">
-     <div class="seg" id="legSeg"><button data-l="o1">行き①</button><button data-l="o2">行き②</button><button data-l="r1">帰り①</button><button data-l="r2">帰り②</button></div>
-     <div id="busHead"></div>
-    </div>
+  <div class="card"><a class="link" target="_blank" rel="noopener" href="https://www.kotsu.metro.tokyo.jp/bus/unkou/">🔗 都営バス 運行情報を見る</a></div>
+  <div class="card">
+   <div class="seg" id="legSeg"><button data-l="o1">行き①</button><button data-l="o2">行き②</button><button data-l="r1">帰り①</button><button data-l="r2">帰り②</button></div>
+   <div id="busBody"></div>
   </div>
-  <div id="busScroll"><div id="busBody"></div></div>
  </section>
  <section class="tab" id="tab-goal">
   <div class="row" style="justify-content:space-between;margin-bottom:8px">
@@ -406,15 +398,11 @@ function renderBus(f=true){
   const list=byDep(S.buses.filter(b=>b.leg===ui.leg));
   const now=new Date(), nm=now.getHours()*60+now.getMinutes();
   const nx=list.find(b=>toMin(b.dep)>=nm);
-  
-  let hHead=`<div class="route"><b>${L.f}</b> → <b>${L.t}</b>　<small>${ui.ttDt?DT_NAME[ui.ttDt]+'ダイヤ　':''}タップで詳細</small></div>`;
-  hHead+=nx?`<div class="next">次の便 <b>${fT(nx.dep)}</b>　あと${toMin(nx.dep)-nm}分</div>`:'<div class="next">本日の便は終了しました</div>';
-  $('#busHead').innerHTML=hHead;
-
-  let hBody='';
-  if(!list.length) hBody+='<div class="empty">便が未登録です。<br>右下の「＋」から登録してください。</div>';
+  let h=`<div class="route"><b>${L.f}</b> → <b>${L.t}</b>　<small>${ui.ttDt?DT_NAME[ui.ttDt]+'ダイヤ　':''}タップで詳細</small></div>`;
+  if(!list.length) h+='<div class="empty">便が未登録です。<br>右下の「＋」から登録してください。</div>';
   else{
-    hBody+=list.map(b=>{
+    h+=nx?`<div class="next">次の便 <b>${fT(nx.dep)}</b>　あと${toMin(nx.dep)-nm}分</div>`:'<div class="next">本日の便は終了しました</div>';
+    h+=list.map(b=>{
       let xf='';
       if(NEXT[b.leg]&&b.arr){
         const c=cand(b);
@@ -424,8 +412,8 @@ function renderBus(f=true){
       return `<div class="busw ${toMin(b.dep)<nm?'past':''}"><div class="bus" data-id="${b.id}"><span class="tm ${nx&&nx.id===b.id?'nx':''}">${fT(b.dep)}</span><span class="ar">→</span><span class="tm2">${fT(b.arr)||'--'}</span>${+b.crowd>0?`<span class="cr c${b.crowd}">${CROWD[b.crowd]}</span>`:''}<span class="nt">${esc(b.note)}</span><button class="btn rb" data-rec="${b.id}">記録</button></div>${xf}</div>`;
     }).join('');
   }
-  if(ui.ttDt&&list.length) hBody+='<div style="margin:10px 0"><small>時刻表: 公共交通オープンデータセンター（東京都交通局）</small></div>';
-  $('#busBody').innerHTML=hBody;
+  if(ui.ttDt&&list.length) h+='<div style="margin-top:10px"><small>時刻表: 公共交通オープンデータセンター（東京都交通局）</small></div>';
+  $('#busBody').innerHTML=h;
   const id=nx?nx.id:null; if(f||ui.lastNx!==id) scrollNext(); ui.lastNx=id;
 }
 function scrollNext(){setTimeout(()=>{const e=$('.tm.nx');if(e&&$('#tab-bus').classList.contains('on'))e.scrollIntoView({block:'center',behavior:'smooth'})},80)}
@@ -811,7 +799,11 @@ $('#mPrev').onclick=()=>{ui.mDay=addD(ui.mDay,-1);renderMeal()};
 $('#mNext').onclick=()=>{ui.mDay=addD(ui.mDay,1);renderMeal()};
 $('#mDate').onchange=()=>{ui.mDay=$('#mDate').value||todayStr();renderMeal()};
 $('#mList').onclick=e=>{const r=e.target.closest('[data-mid]');if(r)openMeal(r.dataset.mid)};
-$('#slotSeg').onclick=e=>{const b=e.target.closest('button');if(b){ui.slot=b.dataset.s;$$('#slotSeg button').forEach(x=>x.classList.toggle('on',x===b))}}; function openMeal(id){ ui.editMeal=id; ui.ai=false; ui.imgs=ui.imgs\vert{}\vert{}[]; const m=S.meals.find(x=>x.id===id)\vert{}\vert{}{slot:defSlot(),name:'',note:''}, dt=id?m.date:ui.mDay; ui.slot=m.slot; $$('#slotSeg button').forEach(b=>b.classList.toggle('on',b.dataset.s===m.slot));
+$('#slotSeg').onclick=e=>{const b=e.target.closest('button');if(b){ui.slot=b.dataset.s;$$('#slotSeg button').forEach(x=>x.classList.toggle('on',x===b))}};
+function openMeal(id){
+  ui.editMeal=id; ui.ai=false; ui.imgs=ui.imgs||[];
+  const m=S.meals.find(x=>x.id===id)||{slot:defSlot(),name:'',note:''}, dt=id?m.date:ui.mDay;
+  ui.slot=m.slot; $$('#slotSeg button').forEach(b=>b.classList.toggle('on',b.dataset.s===m.slot));
   $('#mmT').textContent=(id?'食事を編集':'食事を記録')+'（'+dt.slice(5).replace('-','/')+'）';
   const v=x=>x?x:'';
   $('#mName').value=m.name; $('#mKcal').value=v(m.kcal); $('#mP').value=v(m.p); $('#mF').value=v(m.f); $('#mC').value=v(m.c); $('#mFib').value=v(m.fiber); $('#mSalt').value=v(m.salt); $('#mNote').value=m.note||'';
@@ -918,7 +910,7 @@ $('#ttFetch').onclick=async()=>{
 function fillSettings(){$('#gasUrl').value=gas();$('#xfMin').value=XF();fillGoals();$('#ttMsg').innerHTML='<small>'+(TT&&TT.updated?'取得済み（'+esc(TT.updated)+'）':'未取得')+(ui.ttDt?'　今日は'+DT_NAME[ui.ttDt]+'ダイヤ':'')+'</small>'}
 const setUrl=()=>{try{localStorage.setItem(URLKEY,$('#gasUrl').value.trim())}catch(e){}};
 $('#gasUrl').onchange=()=>{setUrl();msg('URLを保存しました')};
-$('#xfMin').onchange=()=>{S.xfer=Math.max(0,parseInt($('#xfMin').value)\vert{}\vert{}5);$('#xfMin').value=S.xfer;save();renderBus(false)};
+$('#xfMin').onchange=()=>{S.xfer=Math.max(0,parseInt($('#xfMin').value)||5);$('#xfMin').value=S.xfer;save();renderBus(false)};
 Object.values(GID).forEach(id=>$('#'+id).onchange=()=>{readGoals();save();renderMeal()});
 $('#gReset').onclick=()=>{fillGoals(DEF_GOALS);readGoals();save();renderMeal()};
 $('#push').onclick=()=>{setUrl();push()};
