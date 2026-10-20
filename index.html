@@ -132,10 +132,10 @@ body[data-tab=meal] #tab-meal.on{display:flex;flex-direction:column;flex:1;min-h
 .stk{position:static;flex:none}
 #mScroll{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-bottom:90px}
 
-/* バス用スクロールレイアウト */
-body[data-tab=bus] main{overflow:hidden;display:flex;flex-direction:column;padding-bottom:0}
-body[data-tab=bus] #tab-bus.on{display:flex;flex-direction:column;flex:1;min-height:0}
-#busScroll{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-bottom:90px}
+/* バス用スクロールレイアウトの修正 */
+body[data-tab=bus] main{overflow:hidden;display:flex;flex-direction:column;padding:0 12px 0}
+body[data-tab=bus] #tab-bus.on{display:flex;flex-direction:column;flex:1;min-height:0;height:100%}
+#busScroll{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-bottom:120px;-webkit-overflow-scrolling:touch}
 
 .gcard{padding:12px}
 .gh{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
@@ -161,10 +161,12 @@ body[data-tab=bus] #tab-bus.on{display:flex;flex-direction:column;flex:1;min-hei
 <header><span id="ttl">🚌 バス時刻表</span></header>
 <main>
  <section class="tab on" id="tab-bus">
-  <div class="card" style="margin-bottom:0;border-bottom:0;border-bottom-left-radius:0;border-bottom-right-radius:0"><a class="link" target="_blank" rel="noopener" href="https://www.kotsu.metro.tokyo.jp/bus/unkou/">🔗 都営バス 運行情報を見る</a></div>
-  <div class="card" style="border-top-left-radius:0;border-top-right-radius:0;margin-bottom:0">
-   <div class="seg" id="legSeg"><button data-l="o1">行き①</button><button data-l="o2">行き②</button><button data-l="r1">帰り①</button><button data-l="r2">帰り②</button></div>
-   <div id="busHead"></div>
+  <div style="flex:none;">
+    <div class="card" style="margin-bottom:8px;"><a class="link" target="_blank" rel="noopener" href="https://www.kotsu.metro.tokyo.jp/bus/unkou/">🔗 都営バス 運行情報を見る</a></div>
+    <div class="card" style="margin-bottom:8px;">
+     <div class="seg" id="legSeg"><button data-l="o1">行き①</button><button data-l="o2">行き②</button><button data-l="r1">帰り①</button><button data-l="r2">帰り②</button></div>
+     <div id="busHead"></div>
+    </div>
   </div>
   <div id="busScroll"><div id="busBody"></div></div>
  </section>
@@ -386,7 +388,7 @@ const CROWD=['','空いている','ふつう','混雑','激混み'];
 const toMin=t=>{const m=/^(\d{1,2}):(\d{2})/.exec(t||'');return m?+m[1]*60+ +m[2]:null};
 const fT=t=>(t||'').slice(0,5).replace(/^0/,'');
 const NEXT={o1:'o2',r1:'r2'};
-const XF()=>(S.xfer===0||S.xfer)?+S.xfer:5;
+const XF=()=>(S.xfer===0||S.xfer)?+S.xfer:5;
 const CCOL=['','#16a34a','#2563eb','#f59e0b','#e11d48'], XCOL=['','#16a34a','#84cc16','#f59e0b','#e11d48'];
 const XRES_S=['','スムーズ成功','少し待って成功','短すぎて失敗','長すぎて失敗'];
 const dlt=(a,s)=>(a&&s)?toMin(a)-toMin(s):null;
@@ -795,7 +797,7 @@ function renderMeal(){
   const ms=S.meals.filter(m=>m.date===day), goal=G().kcal, k=sum(ms,'kcal'), g=G(), sc=Math.max(100,goal?k/goal*100:0,...NUT.map(([x])=>g[x]?sum(ms,x)/g[x]*100:0));
   $('#mTotal').innerHTML=`<div data-nut="kcal"><div style="margin:10px 0 6px"><span style="font-size:30px;font-weight:700">${Math.round(k).toLocaleString()}</span> kcal${goal?`　<small>目標 ${goal} kcal　</small>${stText(k,goal,'max','kcal')}`:''}</div>`
     +(goal?barHtml(k,goal,'max',sc):'')+'</div>'
-    +NUT.filter(x=>NCOL[x[0]]).map(([k,l,t])=>nutBar(l,sum(ms,k),g[k],t,sc,NCOL[k],k)).join('')+'<div class="nb2">'+NUT.filter(x=>!NCOL[x[0]] ).map(([k,l,t])=>nutHalf(l,sum(ms,k),g[k],t,sc,k)).join('')+'</div>';
+    +NUT.filter(x=>NCOL[x[0]]).map(([k,l,t])=>nutBar(l,sum(ms,k),g[k],t,sc,NCOL[k],k)).join('')+'<div class="nb2">'+NUT.filter(x=>!NCOL[x[0]]).map(([k,l,t])=>nutHalf(l,sum(ms,k),g[k],t,sc,k)).join('')+'</div>';
   let h='';
   SLOTS.forEach(([key,label])=>{
     const l=ms.filter(m=>m.slot===key).sort((a,b)=>a.ts-b.ts); if(!l.length) return;
