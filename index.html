@@ -146,10 +146,10 @@ body[data-tab=meal] #tab-meal.on{display:flex;flex-direction:column;flex:1;min-h
 .cell{width:28px;height:28px;border-radius:50%;border:2px solid var(--line);margin:auto;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700;background:transparent;padding:0}
 .cell.on{background:#16a34a;border-color:#16a34a}.cell.td:not(.on){border-color:var(--pri)}.cell.fut{opacity:.3}
 #gArc summary{font-weight:700;cursor:pointer}
-.mh{display:grid;grid-template-columns:32px repeat(3,60px) 1fr;align-items:center;column-gap:4px}
+.mh{display:grid;grid-template-columns:32px repeat(3,max-content) 1fr;align-items:center;column-gap:14px}
 .mh .mk{text-align:right}
-.mh .pf{display:flex;align-items:center;gap:3px;font-size:12px}
-.mh .pf b{font-weight:400;flex:1;text-align:right;font-variant-numeric:tabular-nums}
+.mh .pf{display:flex;align-items:center;gap:4px;font-size:12px}
+.mh .pf b{font-weight:400;flex:none;width:4.6ch;text-align:right;font-variant-numeric:tabular-nums}
 </style>
 </head>
 <body>
