@@ -193,7 +193,11 @@ body[data-tab=meal] #tab-meal.on{display:flex;flex-direction:column;flex:1;min-h
   </div>
   <div class="card">
    <div class="route"><b>🚌 バス</b></div>
+   <small>都営バスの時刻表を、公共交通オープンデータセンターから自動で取り込みます（野方駅南口・王子駅前・堀船）。毎日1回、今日のダイヤ（平日・土曜・休日）が自動で入ります。ダイヤ改正のときだけ、下のボタンで最新にしてください。</small>
+   <div class="acts"><button class="btn p" id="ttFetch">最新の時刻表を取得</button></div>
+   <div id="ttMsg" style="margin-top:6px"><small></small></div>
    <label>乗り換え所要時間（分）</label><input type="text" inputmode="numeric" id="xfMin">
+   <div style="margin-top:8px"><small>時刻表の出典: 公共交通オープンデータセンター（東京都交通局）</small></div>
   </div>
   <div class="card">
    <div class="route"><b>食事</b></div>
@@ -394,7 +398,7 @@ function renderBus(f=true){
   const list=byDep(S.buses.filter(b=>b.leg===ui.leg));
   const now=new Date(), nm=now.getHours()*60+now.getMinutes();
   const nx=list.find(b=>toMin(b.dep)>=nm);
-  let h=`<div class="route"><b>${L.f}</b> → <b>${L.t}</b>　<small>タップで記録の概要</small></div>`;
+  let h=`<div class="route"><b>${L.f}</b> → <b>${L.t}</b>　<small>${ui.ttDt?DT_NAME[ui.ttDt]+'ダイヤ　':''}タップで詳細</small></div>`;
   if(!list.length) h+='<div class="empty">便が未登録です。<br>右下の「＋」から登録してください。</div>';
   else{
     h+=nx?`<div class="next">次の便 <b>${fT(nx.dep)}</b>　あと${toMin(nx.dep)-nm}分</div>`:'<div class="next">本日の便は終了しました</div>';
@@ -408,6 +412,7 @@ function renderBus(f=true){
       return `<div class="busw ${toMin(b.dep)<nm?'past':''}"><div class="bus" data-id="${b.id}"><span class="tm ${nx&&nx.id===b.id?'nx':''}">${fT(b.dep)}</span><span class="ar">→</span><span class="tm2">${fT(b.arr)||'--'}</span>${+b.crowd>0?`<span class="cr c${b.crowd}">${CROWD[b.crowd]}</span>`:''}<span class="nt">${esc(b.note)}</span><button class="btn rb" data-rec="${b.id}">記録</button></div>${xf}</div>`;
     }).join('');
   }
+  if(ui.ttDt&&list.length) h+='<div style="margin-top:10px"><small>時刻表: 公共交通オープンデータセンター（東京都交通局）</small></div>';
   $('#busBody').innerHTML=h;
   const id=nx?nx.id:null; if(f||ui.lastNx!==id) scrollNext(); ui.lastNx=id;
 }
@@ -854,8 +859,55 @@ $('#mSave').onclick=()=>{
 };
 $('#mDel').onclick=()=>{if(confirm('この記録を削除しますか？')){S.meals=S.meals.filter(x=>x.id!==ui.editMeal);save();close();renderMeal()}};
 
+/* ---------- 時刻表の自動取得（公共交通オープンデータ） ---------- */
+const TT_KEY='myDash.tt', DT_NAME={wd:'平日',sa:'土曜',ho:'休日'};
+let TT=null; try{TT=JSON.parse(localStorage.getItem(TT_KEY)||'null')}catch(e){}
+function dayTypeOf(ds){
+  const c=TT&&TT.cal;
+  if(c&&c.from&&c.to&&ds>=c.from&&ds<=c.to) return (c.ho||[]).includes(ds)?'ho':(c.sa||[]).includes(ds)?'sa':'wd';
+  const [y,m,d]=ds.split('-').map(Number), w=new Date(y,m-1,d).getDay();
+  return (w===0||holSet(y).has(m*100+d))?'ho':w===6?'sa':'wd';
+}
+function applyTT(){
+  if(!TT||!TT.legs) return false;
+  const day=todayStr(), dt=dayTypeOf(day), before=JSON.stringify(S.buses)+JSON.stringify(S.recs);
+  ui.ttDt=dt; ui.ttDay=day;
+  const old={}; S.buses.filter(b=>b.auto).forEach(b=>old[b.id]=b);
+  const fresh=[];
+  Object.keys(LEGS).forEach(leg=>((TT.legs[leg]||{})[dt]||[]).forEach(([dep,arr])=>{
+    const id=`${leg}-${dt}-${dep.replace(':','')}`, ex=old[id];
+    fresh.push(ex?Object.assign(ex,{dep,arr}):{id,leg,dep,arr,crowd:0,note:'',auto:true,dt});
+  }));
+  const key=b=>b.leg+'|'+String(b.dep).slice(0,5), byKey={}, idMap={};
+  fresh.forEach(b=>byKey[key(b)]=b);
+  const manual=S.buses.filter(b=>!b.auto).filter(m=>{
+    const a=byKey[key(m)]; if(!a) return true;
+    idMap[m.id]=a.id; if(!a.crowd&&m.crowd) a.crowd=m.crowd; if(!a.note&&m.note) a.note=m.note; return false;
+  });
+  S.buses=manual.concat(fresh);
+  S.recs.forEach(r=>{if(idMap[r.busId])r.busId=idMap[r.busId]; if(idMap[r.xBusId])r.xBusId=idMap[r.xBusId]});
+  if(JSON.stringify(S.buses)+JSON.stringify(S.recs)!==before) save();
+  return true;
+}
+async function fetchTT(refresh){
+  if(!gas()) throw new Error('Apps Script URLが未設定です');
+  const r=await fetch(gas()+'?action='+(refresh?'refresh':'timetable')), raw=await r.text(); let d;
+  try{d=JSON.parse(raw)}catch(e){throw new Error('サーバーの応答を読み取れませんでした: '+raw.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim().slice(0,120))}
+  if(!d.ok) throw new Error(d.error||'取得に失敗しました');
+  if(refresh) return fetchTT(false);
+  TT=d; try{localStorage.setItem(TT_KEY,JSON.stringify(d));localStorage.setItem('myDash.ttDay',todayStr())}catch(e){}
+  applyTT(); renderBus(); fillSettings(); return d;
+}
+$('#ttFetch').onclick=async()=>{
+  const m=$('#ttMsg'), b=$('#ttFetch');
+  if(!gas()){m.innerHTML='<small style="color:var(--red)">先に、上のデータ同期で、Apps Script URLを入力してください</small>';return}
+  m.innerHTML='<small>取得中…（20〜40秒かかります）</small>'; b.disabled=true;
+  try{await fetchTT(true)}catch(e){m.innerHTML=`<small style="color:var(--red)">${esc(e.message)}</small>`}
+  b.disabled=false;
+};
+
 /* ---------- 設定 ---------- */
-function fillSettings(){$('#gasUrl').value=gas();$('#xfMin').value=XF();fillGoals()}
+function fillSettings(){$('#gasUrl').value=gas();$('#xfMin').value=XF();fillGoals();$('#ttMsg').innerHTML='<small>'+(TT&&TT.updated?'取得済み（'+esc(TT.updated)+'）':'未取得')+(ui.ttDt?'　今日は'+DT_NAME[ui.ttDt]+'ダイヤ':'')+'</small>'}
 const setUrl=()=>{try{localStorage.setItem(URLKEY,$('#gasUrl').value.trim())}catch(e){}};
 $('#gasUrl').onchange=()=>{setUrl();msg('URLを保存しました')};
 $('#xfMin').onchange=()=>{S.xfer=Math.max(0,parseInt($('#xfMin').value)||5);$('#xfMin').value=S.xfer;save();renderBus(false)};
@@ -874,11 +926,16 @@ function migrate(){
     S.xfers=[]; save();
   }
 }
-function renderAll(){migrate();renderBus();renderGoal();renderTodo();renderMeal();fillSettings()}
+function renderAll(){migrate();applyTT();renderBus();renderGoal();renderTodo();renderMeal();fillSettings()}
 renderAll();
 if(gas()) pull();
-setInterval(()=>renderBus(false),30000);
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)renderBus()});
+function ttDaily(){
+  if(ui.ttDay&&ui.ttDay!==todayStr()){applyTT();renderBus();fillSettings()}
+  if(gas()&&localStorage.getItem('myDash.ttDay')!==todayStr()) fetchTT(false).catch(()=>{});
+}
+ttDaily();
+setInterval(()=>{renderBus(false);ttDaily()},30000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){renderBus();ttDaily()}});
 </script>
 </body>
 </html>
