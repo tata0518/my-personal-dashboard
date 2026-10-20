@@ -132,6 +132,11 @@ body[data-tab=meal] #tab-meal.on{display:flex;flex-direction:column;flex:1;min-h
 .stk{position:static;flex:none}
 #mScroll{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-bottom:90px}
 
+/* バス用スクロールレイアウト */
+body[data-tab=bus] main{overflow:hidden;display:flex;flex-direction:column;padding-bottom:0}
+body[data-tab=bus] #tab-bus.on{display:flex;flex-direction:column;flex:1;min-height:0}
+#busScroll{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-bottom:90px}
+
 .gcard{padding:12px}
 .gh{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
 .gtt{font-weight:700;font-size:15px;word-break:break-all}
@@ -156,11 +161,12 @@ body[data-tab=meal] #tab-meal.on{display:flex;flex-direction:column;flex:1;min-h
 <header><span id="ttl">🚌 バス時刻表</span></header>
 <main>
  <section class="tab on" id="tab-bus">
-  <div class="card"><a class="link" target="_blank" rel="noopener" href="https://www.kotsu.metro.tokyo.jp/bus/unkou/">🔗 都営バス 運行情報を見る</a></div>
-  <div class="card">
+  <div class="card" style="margin-bottom:0;border-bottom:0;border-bottom-left-radius:0;border-bottom-right-radius:0"><a class="link" target="_blank" rel="noopener" href="https://www.kotsu.metro.tokyo.jp/bus/unkou/">🔗 都営バス 運行情報を見る</a></div>
+  <div class="card" style="border-top-left-radius:0;border-top-right-radius:0;margin-bottom:0">
    <div class="seg" id="legSeg"><button data-l="o1">行き①</button><button data-l="o2">行き②</button><button data-l="r1">帰り①</button><button data-l="r2">帰り②</button></div>
-   <div id="busBody"></div>
+   <div id="busHead"></div>
   </div>
+  <div id="busScroll"><div id="busBody"></div></div>
  </section>
  <section class="tab" id="tab-goal">
   <div class="row" style="justify-content:space-between;margin-bottom:8px">
@@ -380,7 +386,7 @@ const CROWD=['','空いている','ふつう','混雑','激混み'];
 const toMin=t=>{const m=/^(\d{1,2}):(\d{2})/.exec(t||'');return m?+m[1]*60+ +m[2]:null};
 const fT=t=>(t||'').slice(0,5).replace(/^0/,'');
 const NEXT={o1:'o2',r1:'r2'};
-const XF=()=>(S.xfer===0||S.xfer)?+S.xfer:5;
+const XF()=>(S.xfer===0||S.xfer)?+S.xfer:5;
 const CCOL=['','#16a34a','#2563eb','#f59e0b','#e11d48'], XCOL=['','#16a34a','#84cc16','#f59e0b','#e11d48'];
 const XRES_S=['','スムーズ成功','少し待って成功','短すぎて失敗','長すぎて失敗'];
 const dlt=(a,s)=>(a&&s)?toMin(a)-toMin(s):null;
@@ -398,11 +404,15 @@ function renderBus(f=true){
   const list=byDep(S.buses.filter(b=>b.leg===ui.leg));
   const now=new Date(), nm=now.getHours()*60+now.getMinutes();
   const nx=list.find(b=>toMin(b.dep)>=nm);
-  let h=`<div class="route"><b>${L.f}</b> → <b>${L.t}</b>　<small>${ui.ttDt?DT_NAME[ui.ttDt]+'ダイヤ　':''}タップで詳細</small></div>`;
-  if(!list.length) h+='<div class="empty">便が未登録です。<br>右下の「＋」から登録してください。</div>';
+  
+  let hHead=`<div class="route"><b>${L.f}</b> → <b>${L.t}</b>　<small>${ui.ttDt?DT_NAME[ui.ttDt]+'ダイヤ　':''}タップで詳細</small></div>`;
+  hHead+=nx?`<div class="next">次の便 <b>${fT(nx.dep)}</b>　あと${toMin(nx.dep)-nm}分</div>`:'<div class="next">本日の便は終了しました</div>';
+  $('#busHead').innerHTML=hHead;
+
+  let hBody='';
+  if(!list.length) hBody+='<div class="empty">便が未登録です。<br>右下の「＋」から登録してください。</div>';
   else{
-    h+=nx?`<div class="next">次の便 <b>${fT(nx.dep)}</b>　あと${toMin(nx.dep)-nm}分</div>`:'<div class="next">本日の便は終了しました</div>';
-    h+=list.map(b=>{
+    hBody+=list.map(b=>{
       let xf='';
       if(NEXT[b.leg]&&b.arr){
         const c=cand(b);
@@ -412,8 +422,8 @@ function renderBus(f=true){
       return `<div class="busw ${toMin(b.dep)<nm?'past':''}"><div class="bus" data-id="${b.id}"><span class="tm ${nx&&nx.id===b.id?'nx':''}">${fT(b.dep)}</span><span class="ar">→</span><span class="tm2">${fT(b.arr)||'--'}</span>${+b.crowd>0?`<span class="cr c${b.crowd}">${CROWD[b.crowd]}</span>`:''}<span class="nt">${esc(b.note)}</span><button class="btn rb" data-rec="${b.id}">記録</button></div>${xf}</div>`;
     }).join('');
   }
-  if(ui.ttDt&&list.length) h+='<div style="margin-top:10px"><small>時刻表: 公共交通オープンデータセンター（東京都交通局）</small></div>';
-  $('#busBody').innerHTML=h;
+  if(ui.ttDt&&list.length) hBody+='<div style="margin:10px 0"><small>時刻表: 公共交通オープンデータセンター（東京都交通局）</small></div>';
+  $('#busBody').innerHTML=hBody;
   const id=nx?nx.id:null; if(f||ui.lastNx!==id) scrollNext(); ui.lastNx=id;
 }
 function scrollNext(){setTimeout(()=>{const e=$('.tm.nx');if(e&&$('#tab-bus').classList.contains('on'))e.scrollIntoView({block:'center',behavior:'smooth'})},80)}
@@ -785,7 +795,7 @@ function renderMeal(){
   const ms=S.meals.filter(m=>m.date===day), goal=G().kcal, k=sum(ms,'kcal'), g=G(), sc=Math.max(100,goal?k/goal*100:0,...NUT.map(([x])=>g[x]?sum(ms,x)/g[x]*100:0));
   $('#mTotal').innerHTML=`<div data-nut="kcal"><div style="margin:10px 0 6px"><span style="font-size:30px;font-weight:700">${Math.round(k).toLocaleString()}</span> kcal${goal?`　<small>目標 ${goal} kcal　</small>${stText(k,goal,'max','kcal')}`:''}</div>`
     +(goal?barHtml(k,goal,'max',sc):'')+'</div>'
-    +NUT.filter(x=>NCOL[x[0]]).map(([k,l,t])=>nutBar(l,sum(ms,k),g[k],t,sc,NCOL[k],k)).join('')+'<div class="nb2">'+NUT.filter(x=>!NCOL[x[0]]).map(([k,l,t])=>nutHalf(l,sum(ms,k),g[k],t,sc,k)).join('')+'</div>';
+    +NUT.filter(x=>NCOL[x[0]]).map(([k,l,t])=>nutBar(l,sum(ms,k),g[k],t,sc,NCOL[k],k)).join('')+'<div class="nb2">'+NUT.filter(x=>!NCOL[x[0]] ).map(([k,l,t])=>nutHalf(l,sum(ms,k),g[k],t,sc,k)).join('')+'</div>';
   let h='';
   SLOTS.forEach(([key,label])=>{
     const l=ms.filter(m=>m.slot===key).sort((a,b)=>a.ts-b.ts); if(!l.length) return;
@@ -799,11 +809,7 @@ $('#mPrev').onclick=()=>{ui.mDay=addD(ui.mDay,-1);renderMeal()};
 $('#mNext').onclick=()=>{ui.mDay=addD(ui.mDay,1);renderMeal()};
 $('#mDate').onchange=()=>{ui.mDay=$('#mDate').value||todayStr();renderMeal()};
 $('#mList').onclick=e=>{const r=e.target.closest('[data-mid]');if(r)openMeal(r.dataset.mid)};
-$('#slotSeg').onclick=e=>{const b=e.target.closest('button');if(b){ui.slot=b.dataset.s;$$('#slotSeg button').forEach(x=>x.classList.toggle('on',x===b))}};
-function openMeal(id){
-  ui.editMeal=id; ui.ai=false; ui.imgs=ui.imgs||[];
-  const m=S.meals.find(x=>x.id===id)||{slot:defSlot(),name:'',note:''}, dt=id?m.date:ui.mDay;
-  ui.slot=m.slot; $$('#slotSeg button').forEach(b=>b.classList.toggle('on',b.dataset.s===m.slot));
+$('#slotSeg').onclick=e=>{const b=e.target.closest('button');if(b){ui.slot=b.dataset.s;$$('#slotSeg button').forEach(x=>x.classList.toggle('on',x===b))}}; function openMeal(id){ ui.editMeal=id; ui.ai=false; ui.imgs=ui.imgs\vert{}\vert{}[]; const m=S.meals.find(x=>x.id===id)\vert{}\vert{}{slot:defSlot(),name:'',note:''}, dt=id?m.date:ui.mDay; ui.slot=m.slot; $$('#slotSeg button').forEach(b=>b.classList.toggle('on',b.dataset.s===m.slot));
   $('#mmT').textContent=(id?'食事を編集':'食事を記録')+'（'+dt.slice(5).replace('-','/')+'）';
   const v=x=>x?x:'';
   $('#mName').value=m.name; $('#mKcal').value=v(m.kcal); $('#mP').value=v(m.p); $('#mF').value=v(m.f); $('#mC').value=v(m.c); $('#mFib').value=v(m.fiber); $('#mSalt').value=v(m.salt); $('#mNote').value=m.note||'';
@@ -910,7 +916,7 @@ $('#ttFetch').onclick=async()=>{
 function fillSettings(){$('#gasUrl').value=gas();$('#xfMin').value=XF();fillGoals();$('#ttMsg').innerHTML='<small>'+(TT&&TT.updated?'取得済み（'+esc(TT.updated)+'）':'未取得')+(ui.ttDt?'　今日は'+DT_NAME[ui.ttDt]+'ダイヤ':'')+'</small>'}
 const setUrl=()=>{try{localStorage.setItem(URLKEY,$('#gasUrl').value.trim())}catch(e){}};
 $('#gasUrl').onchange=()=>{setUrl();msg('URLを保存しました')};
-$('#xfMin').onchange=()=>{S.xfer=Math.max(0,parseInt($('#xfMin').value)||5);$('#xfMin').value=S.xfer;save();renderBus(false)};
+$('#xfMin').onchange=()=>{S.xfer=Math.max(0,parseInt($('#xfMin').value)\vert{}\vert{}5);$('#xfMin').value=S.xfer;save();renderBus(false)};
 Object.values(GID).forEach(id=>$('#'+id).onchange=()=>{readGoals();save();renderMeal()});
 $('#gReset').onclick=()=>{fillGoals(DEF_GOALS);readGoals();save();renderMeal()};
 $('#push').onclick=()=>{setUrl();push()};
