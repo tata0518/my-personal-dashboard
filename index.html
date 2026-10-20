@@ -146,6 +146,10 @@ body[data-tab=meal] #tab-meal.on{display:flex;flex-direction:column;flex:1;min-h
 .cell{width:28px;height:28px;border-radius:50%;border:2px solid var(--line);margin:auto;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700;background:transparent;padding:0}
 .cell.on{background:#16a34a;border-color:#16a34a}.cell.td:not(.on){border-color:var(--pri)}.cell.fut{opacity:.3}
 #gArc summary{font-weight:700;cursor:pointer}
+.mh{display:grid;grid-template-columns:32px repeat(3,60px) 1fr;align-items:center;column-gap:4px}
+.mh .mk{text-align:right}
+.mh .pf{display:flex;align-items:center;gap:3px;font-size:12px}
+.mh .pf b{font-weight:400;flex:1;text-align:right;font-variant-numeric:tabular-nums}
 </style>
 </head>
 <body>
@@ -770,6 +774,7 @@ function renderDateTxt(day){
   el.textContent=`${y}/${String(m).padStart(2,'0')}/${String(d).padStart(2,'0')}（${'日月火水木金土'[w]}）`;
   el.style.color=(w===0||h)?'var(--red)':w===6?'var(--pri)':'var(--tx)';
 }
+const pfT=(c,t,v)=>`<span class="pf"><i style="background:${c}">${t}</i><b>${(+v||0).toFixed(1)}</b></span>`;
 function renderMeal(){
   const day=ui.mDay=ui.mDay||todayStr(); $('#mDate').value=day; renderDateTxt(day);
   const ms=S.meals.filter(m=>m.date===day), goal=G().kcal, k=sum(ms,'kcal'), g=G(), sc=Math.max(100,goal?k/goal*100:0,...NUT.map(([x])=>g[x]?sum(ms,x)/g[x]*100:0));
@@ -779,8 +784,8 @@ function renderMeal(){
   let h='';
   SLOTS.forEach(([key,label])=>{
     const l=ms.filter(m=>m.slot===key).sort((a,b)=>a.ts-b.ts); if(!l.length) return;
-    h+=`<div class="card"><div class="mh"><span>${label}</span><span>${Math.round(sum(l,'kcal'))} kcal</span></div>`
-      +l.map(m=>`<div class="meal" data-mid="${m.id}"><div>${esc(m.name)}</div><div class="k">${Math.round(m.kcal)} kcal<div class="pfw"><span class="pf"><i style="background:#ef4444">P</i>${m.p}</span><span class="pf"><i style="background:#eab308">F</i>${m.f}</span><span class="pf"><i style="background:#22c55e">C</i>${m.c}</span></div></div></div>`).join('')+'</div>';
+    h+=`<div class="card"><div class="mh"><span>${label}</span>${pfT('#ef4444','P',sum(l,'p'))}${pfT('#eab308','F',sum(l,'f'))}${pfT('#22c55e','C',sum(l,'c'))}<span class="mk">${Math.round(sum(l,'kcal'))} kcal</span></div>`
+      +l.map(m=>`<div class="meal" data-mid="${m.id}"><div>${esc(m.name)}</div><div class="k">${Math.round(m.kcal)} kcal</div></div>`).join('')+'</div>';
   });
   $('#mList').innerHTML=h||'<div class="empty">この日の記録はありません。<br>右下の「＋」から、写真や栄養成分のスクショを登録できます。</div>';
   $('#mChart').innerHTML=mealChart();
