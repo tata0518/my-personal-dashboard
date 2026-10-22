@@ -150,6 +150,8 @@ body[data-tab=meal] #tab-meal.on{display:flex;flex-direction:column;flex:1;min-h
 .mh .mk{text-align:right}
 .mh .pf{display:flex;align-items:center;gap:4px;font-size:12px}
 .mh .pf b{font-weight:400;flex:none;width:4.6ch;text-align:right;font-variant-numeric:tabular-nums}
+.hrow{display:flex;justify-content:space-between;gap:10px;padding:11px 4px;border-bottom:1px solid var(--line);cursor:pointer;font-size:14px}
+.hrow:active{background:var(--bg)}.hn{min-width:0;word-break:break-all}.hk{white-space:nowrap;color:var(--sub)}
 </style>
 </head>
 <body>
@@ -280,7 +282,7 @@ body[data-tab=meal] #tab-meal.on{display:flex;flex-direction:column;flex:1;min-h
  <h3 id="mmT">食事を記録</h3>
  <label>区分</label>
  <div class="seg" id="slotSeg"><button data-s="朝">朝食</button><button data-s="昼">昼食</button><button data-s="夕">夕食</button><button data-s="間">間食</button></div>
- <label>食事の内容（文章で書くと、AIが栄養素を計算します）</label>
+ <div class="row" style="justify-content:space-between;margin-top:10px"><label style="margin:0">食事の内容</label><button class="btn rb" id="mHist">履歴から入力</button></div>
  <textarea id="mText" style="min-height:72px" placeholder="例：白ご飯150g、鮭の塩焼き1切れ、味噌汁、納豆1パック"></textarea>
  <label>画像（任意・最大5枚：食事の写真／栄養成分表示のスクショ）</label>
  <div class="thumbs" id="mThumbs"></div>
@@ -299,6 +301,12 @@ body[data-tab=meal] #tab-meal.on{display:flex;flex-direction:column;flex:1;min-h
  </div>
  <label>メモ（詳細）</label><textarea id="mNote" style="min-height:70px"></textarea>
  <div class="acts"><button class="btn d" id="mDel">削除</button><button class="btn" data-close>キャンセル</button><button class="btn p" id="mSave">保存</button></div>
+</div></div>
+
+<!-- 履歴から入力 -->
+<div class="mask" id="mHistM"><div class="modal">
+ <div class="row" style="justify-content:space-between;margin-bottom:6px"><h3 style="margin:0">履歴から入力<small>（直近30件）</small></h3><button class="ic" id="mHistX">✕</button></div>
+ <div id="mHistList"></div>
 </div></div>
 
 <!-- 栄養素の推移ポップアップ -->
@@ -365,7 +373,8 @@ const msg=t=>$('#syncMsg').innerHTML='<small>'+esc(t)+'</small>';
 /* ---------- 共通UI ---------- */
 const open=id=>$(id).classList.add('on'), close=()=>$$('.mask').forEach(m=>m.classList.remove('on'));
 $$('[data-close]').forEach(b=>b.onclick=close);
-$$('.mask').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)close()}));
+$$('.mask:not(#mHistM)').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)close()}));
+$('#mHistM').addEventListener('click',e=>{if(e.target.id==='mHistM')$('#mHistM').classList.remove('on')});
 $$('nav button').forEach(b=>b.onclick=()=>{
   $$('nav button').forEach(x=>x.classList.toggle('on',x===b));
   $$('.tab').forEach(t=>t.classList.toggle('on',t.id==='tab-'+b.dataset.t));
@@ -849,6 +858,30 @@ $('#mAnalyze').onclick=async()=>{
   }catch(e){st.innerHTML=`<small style="color:var(--red)">${esc(e.message)}</small>`}
   btn.disabled=false;
 };
+/* 履歴から入力 */
+function mealHistory(){
+  const seen=new Set(), out=[];
+  S.meals.slice().sort((a,b)=>(b.ts||0)-(a.ts||0)).forEach(m=>{
+    const k=m.name+'|'+Math.round(m.kcal);
+    if(out.length<30&&!seen.has(k)){seen.add(k);out.push(m)}
+  });
+  return out;
+}
+$('#mHist').onclick=()=>{
+  const l=mealHistory();
+  $('#mHistList').innerHTML=l.length?l.map(m=>`<div class="hrow" data-hid="${m.id}"><span class="hn">${esc(m.name)}</span><span class="hk">${Math.round(m.kcal)} kcal</span></div>`).join(''):'<div class="empty">履歴がありません。</div>';
+  open('#mHistM');
+};
+$('#mHistList').onclick=e=>{
+  const r=e.target.closest('[data-hid]'); if(!r) return;
+  const m=S.meals.find(x=>x.id===r.dataset.hid); if(!m) return;
+  const v=x=>x?x:'';
+  $('#mText').value=m.note||m.name; $('#mName').value=m.name; $('#mKcal').value=v(m.kcal); $('#mP').value=v(m.p); $('#mF').value=v(m.f); $('#mC').value=v(m.c); $('#mFib').value=v(m.fiber); $('#mSalt').value=v(m.salt); $('#mNote').value=m.note||'';
+  ui.ai=false; $('#mStatus').innerHTML='<small>履歴から入力しました。内容は修正できます。</small>';
+  $('#mHistM').classList.remove('on');
+};
+$('#mHistX').onclick=()=>$('#mHistM').classList.remove('on');
+
 $('#mSave').onclick=()=>{
   const d={slot:ui.slot,name:$('#mName').value.trim(),kcal:num($('#mKcal').value),p:num($('#mP').value),f:num($('#mF').value),c:num($('#mC').value),fiber:num($('#mFib').value),salt:num($('#mSalt').value),note:$('#mNote').value.trim(),ai:!!ui.ai};
   if(!d.name&&!d.kcal) return alert('名前かカロリーを入力してください');
