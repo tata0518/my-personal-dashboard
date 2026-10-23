@@ -130,7 +130,9 @@ main{overscroll-behavior:contain;-webkit-overflow-scrolling:touch;min-height:0}
 body[data-tab=meal] main{overflow:hidden;display:flex;flex-direction:column;padding-bottom:0}
 body[data-tab=meal] #tab-meal.on{display:flex;flex-direction:column;flex:1;min-height:0}
 .stk{position:static;flex:none}
-#mScroll{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-bottom:90px}
+#mScroll,#busScroll{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-bottom:90px}
+body[data-tab=bus] main{overflow:hidden;display:flex;flex-direction:column;padding-bottom:0}
+body[data-tab=bus] #tab-bus.on{display:flex;flex-direction:column;flex:1;min-height:0}
 
 .gcard{padding:12px}
 .gh{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
@@ -155,14 +157,16 @@ body[data-tab=meal] #tab-meal.on{display:flex;flex-direction:column;flex:1;min-h
 .hrow:active{background:var(--bg)}.hn{min-width:0;word-break:break-all}.hk{white-space:nowrap;color:var(--sub)}
 </style>
 </head>
-<body>
+<body data-tab="bus">
 <header><span id="ttl">🚌 バス時刻表</span></header>
 <main>
  <section class="tab on" id="tab-bus">
-  <div class="card"><a class="link" target="_blank" rel="noopener" href="https://www.kotsu.metro.tokyo.jp/bus/unkou/">🔗 都営バス 運行情報を見る</a></div>
-  <div class="card">
-   <div class="seg" id="legSeg"><button data-l="o1">行き①</button><button data-l="o2">行き②</button><button data-l="r1">帰り①</button><button data-l="r2">帰り②</button></div>
-   <div id="busBody"></div>
+  <div class="stk"><div class="card" style="padding:8px 12px">
+   <div class="seg" id="legSeg" style="margin:0"><button data-l="o1">行き①</button><button data-l="o2">行き②</button><button data-l="r1">帰り①</button><button data-l="r2">帰り②</button></div>
+  </div></div>
+  <div id="busScroll">
+   <div class="card"><a class="link" target="_blank" rel="noopener" href="https://www.kotsu.metro.tokyo.jp/bus/unkou/">🔗 都営バス 運行情報を見る</a></div>
+   <div class="card"><div id="busBody"></div></div>
   </div>
  </section>
  <section class="tab" id="tab-goal">
