@@ -381,7 +381,7 @@ $$('nav button').forEach(b=>b.onclick=()=>{
   $$('.tab').forEach(t=>t.classList.toggle('on',t.id==='tab-'+b.dataset.t));
   document.body.classList.toggle('todo-on',b.dataset.t==='todo');
   $('#ttl').textContent=({bus:'🚌 バス時刻表',goal:'🎯 目標管理',meal:'食事記録',set:'⚙️ 設定',todo:'✅ やることリスト'})[b.dataset.t];document.body.dataset.tab=b.dataset.t;if(b.dataset.t==='goal')renderGoal();if(b.dataset.t==='meal')renderMeal();if(b.dataset.t==='set')fillSettings();
-  if(b.dataset.t==='bus') scrollNext();
+  if(b.dataset.t==='bus'){scrollNext();pollNear()}
 });
 
 /* ---------- バス時刻表 ---------- */
@@ -401,6 +401,18 @@ function cand(b){
   const nl=NEXT[b.leg], am=toMin(b.arr); if(!nl||am===null) return null;
   return byDep(S.buses.filter(x=>x.leg===nl)).find(x=>toMin(x.dep)>=am+XF())||false;
 }
+let nearBusy=false;
+const nearTxt=n=>n?`　<span style="color:${n.ahead<=2?'var(--red)':'var(--pri)'};font-weight:700">接近中 ${n.ahead===0?'まもなく':'あと'+n.ahead+'停留所'}</span>`:'';
+const apLine=n=>n?`<div class="xf"><b style="color:${n.ahead<=2?'var(--red)':'var(--pri)'}">接近中</b>　${n.ahead===0?'次の停留所が乗り場です':'乗り場まで あと'+n.ahead+'停留所'}${n.loc?'（現在 '+esc(n.loc)+' 付近）':''}</div>`:'';
+async function pollNear(){
+  if(nearBusy||!gas()||!ui.ttDt||document.hidden||!$('#tab-bus').classList.contains('on')||!ui.leg) return;
+  const leg=ui.leg; nearBusy=true;
+  try{
+    const r=await fetch(gas()+'?action=near&leg='+leg), d=JSON.parse(await r.text());
+    if(d.ok){ui.near={leg,updated:d.updated,buses:d.buses};renderBus(false)}
+  }catch(e){}
+  nearBusy=false;
+}
 function renderBus(f=true){
   ui.leg=ui.leg||(new Date().getHours()<12?'o1':'r1');
   $$('#legSeg button').forEach(b=>b.classList.toggle('on',b.dataset.l===ui.leg));
@@ -408,10 +420,11 @@ function renderBus(f=true){
   const list=byDep(S.buses.filter(b=>b.leg===ui.leg));
   const now=new Date(), nm=now.getHours()*60+now.getMinutes();
   const nx=list.find(b=>toMin(b.dep)>=nm);
+  const nb=(ui.near&&ui.near.leg===ui.leg)?ui.near.buses:[], nearOf=b=>nb.find(x=>x.dep===String(b.dep).slice(0,5));
   let h=`<div class="route"><b>${L.f}</b> → <b>${L.t}</b>　<small>${ui.ttDt?DT_NAME[ui.ttDt]+'ダイヤ　':''}タップで詳細</small></div>`;
   if(!list.length) h+='<div class="empty">便が未登録です。<br>右下の「＋」から登録してください。</div>';
   else{
-    h+=nx?`<div class="next">次の便 <b>${fT(nx.dep)}</b>　あと${toMin(nx.dep)-nm}分</div>`:'<div class="next">本日の便は終了しました</div>';
+    h+=nx?`<div class="next">次の便 <b>${fT(nx.dep)}</b>　あと${toMin(nx.dep)-nm}分${nearTxt(nearOf(nx))}</div>`:'<div class="next">本日の便は終了しました</div>';
     h+=list.map(b=>{
       let xf='';
       if(NEXT[b.leg]&&b.arr){
@@ -419,15 +432,15 @@ function renderBus(f=true){
         xf=c?`<div class="xf">🔁 <b>${fT(c.dep)}</b>発に接続可（待ち${toMin(c.dep)-toMin(b.arr)}分）　${stat(b.id,c.id)}</div>`
             :`<div class="xf">🔁 乗継可能な便なし（乗換${XF()}分）</div>`;
       }
-      return `<div class="busw ${toMin(b.dep)<nm?'past':''}"><div class="bus" data-id="${b.id}"><span class="tm ${nx&&nx.id===b.id?'nx':''}">${fT(b.dep)}</span><span class="ar">→</span><span class="tm2">${fT(b.arr)||'--'}</span>${+b.crowd>0?`<span class="cr c${b.crowd}">${CROWD[b.crowd]}</span>`:''}<span class="nt">${esc(b.note)}</span><button class="btn rb" data-rec="${b.id}">記録</button></div>${xf}</div>`;
+      return `<div class="busw ${toMin(b.dep)<nm?'past':''}"><div class="bus" data-id="${b.id}"><span class="tm ${nx&&nx.id===b.id?'nx':''}">${fT(b.dep)}</span><span class="ar">→</span><span class="tm2">${fT(b.arr)||'--'}</span>${+b.crowd>0?`<span class="cr c${b.crowd}">${CROWD[b.crowd]}</span>`:''}<span class="nt">${esc(b.note)}</span><button class="btn rb" data-rec="${b.id}">記録</button></div>${apLine(nearOf(b))}${xf}</div>`;
     }).join('');
   }
-  if(ui.ttDt&&list.length) h+='<div style="margin-top:10px"><small>時刻表: 公共交通オープンデータセンター（東京都交通局）</small></div>';
+  if(ui.ttDt&&list.length) h+=`<div style="margin-top:10px"><small>時刻表・接近情報: 公共交通オープンデータセンター（東京都交通局）${ui.near&&ui.near.leg===ui.leg?'　接近情報 '+esc(ui.near.updated)+' 更新':''}</small></div>`;
   $('#busBody').innerHTML=h;
   const id=nx?nx.id:null; if(f||ui.lastNx!==id) scrollNext(); ui.lastNx=id;
 }
 function scrollNext(){setTimeout(()=>{const e=$('.tm.nx');if(e&&$('#tab-bus').classList.contains('on'))e.scrollIntoView({block:'center',behavior:'smooth'})},80)}
-$('#legSeg').onclick=e=>{const b=e.target.closest('button');if(b){ui.leg=b.dataset.l;renderBus()}};
+$('#legSeg').onclick=e=>{const b=e.target.closest('button');if(b){ui.leg=b.dataset.l;renderBus();pollNear()}};
 $('#busBody').onclick=e=>{
   const x=e.target.closest('[data-rec]'); if(x) return openRec(x.dataset.rec);
   const r=e.target.closest('.bus'); if(r) openDet(r.dataset.id);
@@ -968,8 +981,8 @@ function ttDaily(){
   if(gas()&&localStorage.getItem('myDash.ttDay')!==todayStr()) fetchTT(false).catch(()=>{});
 }
 ttDaily();
-setInterval(()=>{renderBus(false);ttDaily()},30000);
-document.addEventListener('visibilitychange',()=>{if(!document.hidden){renderBus();ttDaily()}});
+setInterval(()=>{renderBus(false);ttDaily();pollNear()},30000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){renderBus();ttDaily();pollNear()}});
 </script>
 </body>
 </html>
