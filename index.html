@@ -41,7 +41,7 @@ textarea{min-height:90px}
 .over{color:var(--red);font-weight:700}
 .ic{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--bg);font-size:16px;color:var(--tx)}
 .ic.ok{color:#16a34a}
-#fab{position:fixed;right:18px;bottom:calc(76px + env(safe-area-inset-bottom));width:56px;height:56px;border-radius:50%;border:0;background:var(--pri);color:#fff;font-size:30px;box-shadow:0 4px 12px #0004}
+#fab{position:fixed;right:18px;bottom:calc(76px + env(safe-area-inset-bottom));width:56px;height:56px;border-radius:50%;border:0;background:var(--pri);color:#fff;font-size:30px;box-shadow:0 4px 12px #0004;touch-action:none}
 .mask{position:fixed;inset:0;background:#0007;display:none;align-items:flex-end;justify-content:center;z-index:10}
 .mask.on{display:flex}
 .modal{background:var(--card);width:100%;max-width:520px;max-height:92%;overflow-y:auto;border-radius:16px 16px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
@@ -92,7 +92,8 @@ main{overscroll-behavior:contain;-webkit-overflow-scrolling:touch;min-height:0}
 body[data-tab=meal] main{overflow:hidden;display:flex;flex-direction:column;padding-bottom:0}
 body[data-tab=meal] #tab-meal.on{display:flex;flex-direction:column;flex:1;min-height:0}
 .stk{position:static;flex:none}
-#mScroll{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-bottom:90px}
+#mScroll{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-bottom:0}
+#mScroll>.card:last-child{margin-bottom:0}
 .cw{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
 .cw svg{display:block}.cw [data-day]{cursor:pointer}
 
@@ -133,11 +134,11 @@ body[data-tab=meal] #tab-meal.on{display:flex;flex-direction:column;flex:1;min-h
  </section>
  <section class="tab" id="tab-meal">
   <div class="stk"><div class="card">
-   <div class="row" style="justify-content:space-between"><button class="ic sm" id="mPrev">‹</button><label class="dsel sm"><span id="mDateTxt"></span><input type="date" id="mDate"></label><button class="ic sm" id="mNext">›</button></div>
+   <div class="row" style="justify-content:space-between"><button class="ic sm" id="mPrev">‹</button><div class="row" style="gap:6px"><label class="dsel sm"><span id="mDateTxt"></span><input type="date" id="mDate"></label><button class="btn rb" id="mToday">今日</button></div><button class="ic sm" id="mNext">›</button></div>
    <div id="mTotal"></div>
   </div></div>
   <div id="mScroll"><div id="mList"></div>
-  <div class="card"><div class="route">カロリー推移　<small>左右にスライドで最大2ヶ月前まで／棒をタップでその日を表示／橙＝＋20%まで超過／赤＝それ以上</small></div><div class="cw" id="mCW"><div id="mChart"></div></div></div></div>
+  <div class="card"><div class="route">カロリー推移</div><div class="cw" id="mCW"><div id="mChart"></div></div></div></div>
  </section>
  <section class="tab" id="tab-todo">
   <div id="todoList"></div>
@@ -412,7 +413,7 @@ function openTodo(id){
   $('#tTitle').value=t.title;$('#tCat').value=t.cat;$('#tBody').value=t.body;$('#tDue').value=t.due||'';$('#tNoDue').checked=!t.due;
   setPri(t.pri);$('#tDel').style.display=id?'':'none';open('#mTodo');
 }
-$('#fab').onclick=()=>{const t=document.body.dataset.tab||'goal';t==='todo'?openTodo(null):t==='meal'?openMeal(null):openGoal(null)};
+$('#fab').onclick=()=>{if(fabMoved){fabMoved=false;return}const t=document.body.dataset.tab||'goal';t==='todo'?openTodo(null):t==='meal'?openMeal(null):openGoal(null)};
 $('#tSave').onclick=()=>{
   const title=$('#tTitle').value.trim(); if(!title) return alert('タイトルを入力してください');
   const d={title,pri:ui.pri,cat:$('#tCat').value.trim(),body:$('#tBody').value,due:$('#tNoDue').checked?'':$('#tDue').value};
@@ -527,18 +528,19 @@ function trendChart(key,type,col){
   return s+'</svg>';
 }
 function mealChart(){return trendChart('kcal','max','var(--pri)')}
-function gotoDay(d){close();ui.mDay=d;renderMeal();$('#mScroll').scrollTop=0}
+function pickDay(d){const sc=$('#mScroll'), cw=$('#mCW'), y0=cw.getBoundingClientRect().top;ui.mDay=d;renderMeal();sc.scrollTop+=cw.getBoundingClientRect().top-y0}
 function openNut(key){
   const [label,type,u]=NMETA[key], goal=G()[key]||0;
   const days=[...Array(CH_DAYS)].map((_,i)=>addD(todayStr(),i-CH_DAYS+1)), rec=days.filter(d=>S.meals.some(m=>m.date===d));
   const avg=rec.length?rec.reduce((a,d)=>a+sum(S.meals.filter(m=>m.date===d),key),0)/rec.length:0;
   $('#nT').textContent=label+'　推移';
-  $('#nBody').innerHTML=`<div class="route">${goal?'目標 '+goal+' '+u+(type==='min'?' 以上':' 以内'):'目標なし'}${rec.length?'　／　記録のある日の平均 '+(key==='kcal'?Math.round(avg):Math.round(avg*10)/10)+' '+u:''}</div><div class="route"><small>左右にスライドで最大2ヶ月前まで／棒をタップでその日を表示</small></div><div class="cw">${trendChart(key,type,BARCOL[key]||'var(--pri)')}</div>`;
+  $('#nBody').innerHTML=`<div class="route">${goal?'目標 '+goal+' '+u+(type==='min'?' 以上':' 以内'):'目標なし'}${rec.length?'　／　記録のある日の平均 '+(key==='kcal'?Math.round(avg):Math.round(avg*10)/10)+' '+u:''}</div><div class="cw">${trendChart(key,type,BARCOL[key]||'var(--pri)')}</div>`;
+  ui.nut=[key,type,BARCOL[key]||'var(--pri)'];
   open('#mNut'); const w=$('#nBody .cw'); w.scrollLeft=w.scrollWidth;
 }
 $('#mTotal').onclick=e=>{const n=e.target.closest('[data-nut]');if(n)openNut(n.dataset.nut)};
-$('#nBody').onclick=e=>{const r=e.target.closest('[data-day]');if(r)gotoDay(r.dataset.day)};
-$('#mChart').onclick=e=>{const r=e.target.closest('[data-day]');if(r)gotoDay(r.dataset.day)};
+$('#nBody').onclick=e=>{const r=e.target.closest('[data-day]');if(!r)return;pickDay(r.dataset.day);const w=$('#nBody .cw'),sl=w.scrollLeft;w.innerHTML=trendChart(...ui.nut);w.scrollLeft=sl};
+$('#mChart').onclick=e=>{const r=e.target.closest('[data-day]');if(r)pickDay(r.dataset.day)};
 const nthMon=(y,m,n)=>1+(8-new Date(y,m,1).getDay())%7+7*(n-1);
 function holSet(y){
   const H=new Set(), add=(m,d)=>H.add(m*100+d), key=dt=>(dt.getMonth()+1)*100+dt.getDate();
@@ -574,6 +576,7 @@ function renderMeal(){
 }
 $('#mPrev').onclick=()=>{ui.mDay=addD(ui.mDay,-1);renderMeal()};
 $('#mNext').onclick=()=>{ui.mDay=addD(ui.mDay,1);renderMeal()};
+$('#mToday').onclick=()=>{ui.mDay=todayStr();renderMeal();const w=$('#mCW');w.scrollLeft=w.scrollWidth};
 $('#mDate').onchange=()=>{ui.mDay=$('#mDate').value||todayStr();renderMeal()};
 $('#mList').onclick=e=>{const r=e.target.closest('[data-mid]');if(r)openMeal(r.dataset.mid)};
 /* 左右スワイプで日付を前後に切り替え（グラフ部分は除く） */
@@ -674,6 +677,29 @@ $('#mSave').onclick=()=>{
   save();close();renderMeal();
 };
 $('#mDel').onclick=()=>{if(confirm('この記録を削除しますか？')){S.meals=S.meals.filter(x=>x.id!==ui.editMeal);save();close();renderMeal()}};
+
+/* ---------- ＋ボタンのドラッグ移動 ---------- */
+let fabMoved=false, fd=null; const FABK='myDash.fab', fab=$('#fab');
+function fabPlace(r,b){
+  r=Math.min(Math.max(r,8),innerWidth-56-8); b=Math.min(Math.max(b,$('nav').offsetHeight+8),innerHeight-56-60);
+  fab.style.right=r+'px'; fab.style.bottom=b+'px'; return [r,b];
+}
+try{const p=JSON.parse(localStorage.getItem(FABK)||'null'); if(p) fabPlace(p[0],p[1])}catch(e){}
+addEventListener('resize',()=>{const c=fab.getBoundingClientRect(); if(c.width) fabPlace(innerWidth-c.right,innerHeight-c.bottom)});
+fab.addEventListener('pointerdown',e=>{
+  fabMoved=false; const c=fab.getBoundingClientRect();
+  fd={x:e.clientX,y:e.clientY,r:innerWidth-c.right,b:innerHeight-c.bottom,on:false}; fab.setPointerCapture(e.pointerId);
+});
+fab.addEventListener('pointermove',e=>{
+  if(!fd) return; const dx=e.clientX-fd.x, dy=e.clientY-fd.y;
+  if(!fd.on&&Math.hypot(dx,dy)>8){fd.on=true;fabMoved=true}
+  if(fd.on) fabPlace(fd.r-dx,fd.b-dy);
+});
+const fabEnd=()=>{
+  if(fd&&fd.on){try{localStorage.setItem(FABK,JSON.stringify([parseFloat(fab.style.right),parseFloat(fab.style.bottom)]))}catch(e){}}
+  fd=null;
+};
+fab.addEventListener('pointerup',fabEnd); fab.addEventListener('pointercancel',fabEnd);
 
 /* ---------- 設定 ---------- */
 function fillSettings(){$('#gasUrl').value=gas();fillGoals()}
