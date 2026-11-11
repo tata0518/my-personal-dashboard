@@ -19,7 +19,6 @@ nav button span{display:block;font-size:20px}
 nav button.on{color:var(--pri);font-weight:700}
 .tab{display:none}.tab.on{display:block}
 .card{background:var(--card);border-radius:12px;padding:12px;margin-bottom:10px;border:1px solid var(--line)}
-.link{display:block;text-align:center;text-decoration:none;color:var(--pri);font-weight:600;padding:12px}
 .row{display:flex;gap:8px;align-items:center}
 select,input,textarea,button.btn{font:inherit;color:var(--tx);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px}
 select,input[type=text],input[type=date],textarea{width:100%}
@@ -29,14 +28,6 @@ textarea{min-height:90px}
 .seg button{flex:1;padding:8px;border:1px solid var(--line);background:var(--card);color:var(--sub)}
 .seg button:first-child{border-radius:8px 0 0 8px}.seg button:last-child{border-radius:0 8px 8px 0}
 .seg button.on{background:var(--pri);color:#fff;border-color:var(--pri)}
-.next{font-size:15px;margin:6px 0 10px}.next b{font-size:26px}
-.tt{display:grid;grid-template-columns:44px 1fr}
-.tt>div{padding:8px 4px;border-bottom:1px solid var(--line)}
-.tt .h{font-weight:700;color:var(--sub);text-align:center}
-.tt .m{display:flex;flex-wrap:wrap;gap:6px}
-.tt .m span{min-width:34px;text-align:center;padding:3px 4px;border-radius:50%;border:2px solid transparent;font-variant-numeric:tabular-nums}
-.tt .m span.past{color:var(--sub);opacity:.45}
-.tt .m span.nx{border-color:var(--red);color:var(--red);font-weight:700}
 .empty{color:var(--sub);text-align:center;padding:30px 10px;line-height:1.7}
 .todo{display:flex;align-items:center;gap:8px}
 .todo .bd{flex:1;min-width:0}
@@ -58,37 +49,9 @@ textarea{min-height:90px}
 .modal label{display:block;font-size:12px;color:var(--sub);margin:10px 0 4px}
 .modal .acts{display:flex;gap:8px;margin-top:16px}.modal .acts .btn{flex:1}
 small{color:var(--sub)}
-
 .route{font-size:14px;color:var(--sub);margin:4px 0 8px}.route b{color:var(--tx)}
-.bus{display:flex;align-items:center;gap:8px;padding:10px 4px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
-.bus.past{opacity:.45}
-.tm{font-size:20px;font-weight:700;padding:2px 12px;border:2px solid transparent;border-radius:999px}
-.tm.nx{border-color:var(--red);color:var(--red);font-size:24px}
-.ar{color:var(--sub)}.tm2{font-size:17px}
-.cr{font-size:11px;padding:2px 7px;border-radius:10px;color:#fff;white-space:nowrap}
-.c1{background:#16a34a}.c2{background:#2563eb}.c3{background:#f59e0b}.c4{background:#e11d48}
-.nt{flex:1;font-size:12px;color:var(--sub);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right}
-.busw{border-bottom:1px solid var(--line)}.busw .bus{border-bottom:0}.busw.past{opacity:.45}
-.xf{font-size:12px;color:var(--sub);padding:0 4px 9px 16px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.xf b{color:var(--tx)}.xf .btn{padding:3px 10px;font-size:12px;margin-left:auto}
 .xfr{font-size:13px;padding:7px 4px;border-bottom:1px solid var(--line)}
-.okm{color:#16a34a;font-weight:700}.ngm{color:var(--red);font-weight:700}
 .rb{padding:4px 10px;font-size:12px;flex:none}
-input[type=time]{width:100%}
-.row input[type=time]{flex:1}
-#rDD,#rDA{color:var(--red);font-weight:700;margin-left:8px}
-.dist{display:flex;align-items:center;gap:8px;font-size:12px;margin:5px 0}
-.dist .lb{width:7.5em;flex:none}.dist .br{flex:1;height:12px;background:var(--bg);border-radius:6px;overflow:hidden}
-.dist .br i{display:block;height:100%}.dist .n{width:2em;text-align:right;color:var(--sub)}
-[data-rd]{cursor:pointer}
-.cmpr{display:grid;gap:4px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px;font-variant-numeric:tabular-nums}
-.g5{grid-template-columns:1.1fr .9fr 1.2fr 1.5fr 1fr}.g4{grid-template-columns:1.1fr .9fr 1.2fr 1.7fr}
-.cmpr.hd{font-size:11px;color:var(--sub);padding:4px 0}
-.cmpr span{display:block}.cmpr .cr{display:inline-block}.cmpr small{display:block;font-size:10px}
-.cmpr.past{opacity:.45}.cmpr .est{color:var(--sub)}
-.best{color:#16a34a;font-weight:700}.best .cr{box-shadow:0 0 0 2px #16a34a}
-.pick{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
-.pick .ic2{font-size:22px}.pick b{font-size:12px;color:var(--sub)}.pick .v{font-size:16px;font-weight:700}.pick .v small{font-weight:400;font-size:12px}
 body[data-tab=set] #fab{display:none}
 body[data-tab=meal] header{display:none}
 .ic.sm{width:30px;height:30px;font-size:14px;padding:0}
@@ -96,7 +59,6 @@ body[data-tab=meal] header{display:none}
 .set label{display:block;font-size:12px;color:var(--sub);margin:10px 0 4px}
 .set .acts{display:flex;gap:8px;margin-top:12px}.set .acts .btn{flex:1}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
-.pbar{height:10px;background:var(--bg);border-radius:6px;overflow:hidden}.pbar i{display:block;height:100%}
 .macro{display:grid;grid-template-columns:repeat(5,1fr);text-align:center;margin-top:12px}
 .macro b{display:block;font-size:16px}.macro small{font-size:10px}
 .mh{display:flex;justify-content:space-between;font-weight:700;margin-bottom:4px}
@@ -130,9 +92,9 @@ main{overscroll-behavior:contain;-webkit-overflow-scrolling:touch;min-height:0}
 body[data-tab=meal] main{overflow:hidden;display:flex;flex-direction:column;padding-bottom:0}
 body[data-tab=meal] #tab-meal.on{display:flex;flex-direction:column;flex:1;min-height:0}
 .stk{position:static;flex:none}
-#mScroll,#busScroll{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-bottom:90px}
-body[data-tab=bus] main{overflow:hidden;display:flex;flex-direction:column;padding-bottom:0}
-body[data-tab=bus] #tab-bus.on{display:flex;flex-direction:column;flex:1;min-height:0}
+#mScroll{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-bottom:90px}
+.cw{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+.cw svg{display:block}.cw [data-day]{cursor:pointer}
 
 .gcard{padding:12px}
 .gh{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
@@ -157,19 +119,10 @@ body[data-tab=bus] #tab-bus.on{display:flex;flex-direction:column;flex:1;min-hei
 .hrow:active{background:var(--bg)}.hn{min-width:0;word-break:break-all}.hk{white-space:nowrap;color:var(--sub)}
 </style>
 </head>
-<body data-tab="bus">
-<header><span id="ttl">🚌 バス時刻表</span></header>
+<body data-tab="goal">
+<header><span id="ttl">🎯 目標管理</span></header>
 <main>
- <section class="tab on" id="tab-bus">
-  <div class="stk"><div class="card" style="padding:8px 12px">
-   <div class="seg" id="legSeg" style="margin:0"><button data-l="o1">行き①</button><button data-l="o2">行き②</button><button data-l="r1">帰り①</button><button data-l="r2">帰り②</button></div>
-  </div></div>
-  <div id="busScroll">
-   <div class="card"><a class="link" target="_blank" rel="noopener" href="https://www.kotsu.metro.tokyo.jp/bus/unkou/">🔗 都営バス 運行情報を見る</a></div>
-   <div class="card"><div id="busBody"></div></div>
-  </div>
- </section>
- <section class="tab" id="tab-goal">
+ <section class="tab on" id="tab-goal">
   <div class="row" style="justify-content:space-between;margin-bottom:8px">
    <button class="ic sm" id="gwPrev">‹</button>
    <div id="gwTxt0" style="text-align:center;cursor:pointer"><b id="gwTxt"></b><div><small id="gwSub"></small></div></div>
@@ -184,7 +137,7 @@ body[data-tab=bus] #tab-bus.on{display:flex;flex-direction:column;flex:1;min-hei
    <div id="mTotal"></div>
   </div></div>
   <div id="mScroll"><div id="mList"></div>
-  <div class="card"><div class="route">直近7日のカロリー　<small>橙＝＋20%まで超過／赤＝それ以上</small></div><div id="mChart"></div></div></div>
+  <div class="card"><div class="route">カロリー推移　<small>左右にスライドで最大2ヶ月前まで／棒をタップでその日を表示／橙＝＋20%まで超過／赤＝それ以上</small></div><div class="cw" id="mCW"><div id="mChart"></div></div></div></div>
  </section>
  <section class="tab" id="tab-todo">
   <div id="todoList"></div>
@@ -197,14 +150,6 @@ body[data-tab=bus] #tab-bus.on{display:flex;flex-direction:column;flex:1;min-hei
    <label>Apps Script URL</label><input type="text" id="gasUrl" placeholder="https://script.google.com/macros/s/.../exec">
    <div id="syncMsg" style="margin-top:6px"><small></small></div>
    <div class="acts"><button class="btn" id="pull">読込</button><button class="btn" id="push">送信</button></div>
-  </div>
-  <div class="card">
-   <div class="route"><b>🚌 バス</b></div>
-   <small>都営バスの時刻表を、公共交通オープンデータセンターから自動で取り込みます（野方駅南口・王子駅前・堀船）。毎日1回、今日のダイヤ（平日・土曜・休日）が自動で入ります。ダイヤ改正のときだけ、下のボタンで最新にしてください。</small>
-   <div class="acts"><button class="btn p" id="ttFetch">最新の時刻表を取得</button></div>
-   <div id="ttMsg" style="margin-top:6px"><small></small></div>
-   <label>乗り換え所要時間（分）</label><input type="text" inputmode="numeric" id="xfMin">
-   <div style="margin-top:8px"><small>時刻表の出典: 公共交通オープンデータセンター（東京都交通局）</small></div>
   </div>
   <div class="card">
    <div class="route"><b>食事</b></div>
@@ -224,49 +169,11 @@ body[data-tab=bus] #tab-bus.on{display:flex;flex-direction:column;flex:1;min-hei
 </main>
 <button id="fab">＋</button>
 <nav>
- <button data-t="bus" class="on"><span>🚌</span>バス</button>
- <button data-t="goal"><span>🎯</span>目標</button>
+ <button data-t="goal" class="on"><span>🎯</span>目標</button>
  <button data-t="meal"><span>🍽</span>食事</button>
  <button data-t="todo"><span>✅</span>やること</button>
  <button data-t="set"><span>⚙️</span>設定</button>
 </nav>
-
-<!-- 便モーダル -->
-<div class="mask" id="mBus"><div class="modal">
- <h3 id="mBusT">便の登録</h3>
- <label id="bDepL">発車時刻</label><input type="time" id="bDep">
- <label id="bArrL">到着時刻</label><input type="time" id="bArr">
- <label>混雑予想</label><select id="bCrowd"><option value="0">未設定</option><option value="1">空いている</option><option value="2">ふつう</option><option value="3">混雑</option><option value="4">激混み</option></select>
- <label>備考</label><input type="text" id="bNote">
- <div class="acts"><button class="btn d" id="bDel">削除</button><button class="btn" data-close>キャンセル</button><button class="btn p" id="bSave">保存</button></div>
- <div class="acts" id="bAgainRow"><button class="btn" id="bSave2">保存して続けて登録</button></div>
-</div></div>
-
-<!-- 記録モーダル -->
-<div class="mask" id="mRec"><div class="modal">
- <h3 id="rT">記録</h3>
- <small>入力できる項目だけでOK。同じ日に何度でも追記できます。</small>
- <label>日付</label><input type="date" id="rDate">
- <label>実際の発車時刻<span id="rDD"></span></label>
- <div class="row"><input type="time" id="rAD"><button class="btn" data-now="rAD">今</button></div>
- <label>実際の到着時刻<span id="rDA"></span></label>
- <div class="row"><input type="time" id="rAA"><button class="btn" data-now="rAA">今</button></div>
- <label>混雑状況</label>
- <select id="rCr"><option value="0">未記録</option><option value="1">空いている</option><option value="2">ふつう</option><option value="3">混雑</option><option value="4">激混み</option></select>
- <div id="rXBox">
-  <label>乗り換え先の便</label><select id="rXB"></select>
-  <label>乗り換えの結果</label>
-  <select id="rXR"><option value="0">未記録</option><option value="1">スムーズに成功</option><option value="2">少し待ったが成功</option><option value="3">待ち時間が短く失敗</option><option value="4">待ち時間が長すぎて失敗</option></select>
- </div>
- <div class="acts"><button class="btn d" id="rDel">削除</button><button class="btn" data-close>キャンセル</button><button class="btn p" id="rSave">保存</button></div>
-</div></div>
-
-<!-- 便の詳細モーダル -->
-<div class="mask" id="mDet"><div class="modal">
- <h3 id="dT"></h3><div id="dBody"></div>
- <div class="acts"><button class="btn" id="dEdit">便を編集</button><button class="btn p" id="dRec">記録する</button></div>
- <div class="acts"><button class="btn" data-close>閉じる</button></div>
-</div></div>
 
 <!-- 目標モーダル -->
 <div class="mask" id="mGoal"><div class="modal">
@@ -310,7 +217,8 @@ body[data-tab=bus] #tab-bus.on{display:flex;flex-direction:column;flex:1;min-hei
 
 <!-- 履歴から入力 -->
 <div class="mask" id="mHistM"><div class="modal">
- <div class="row" style="justify-content:space-between;margin-bottom:6px"><h3 style="margin:0">履歴から入力<small>（直近30件）</small></h3><button class="ic" id="mHistX">✕</button></div>
+ <div class="row" style="justify-content:space-between;margin-bottom:6px"><h3 style="margin:0">履歴から入力<small id="hSub">（直近30件）</small></h3><button class="ic" id="mHistX">✕</button></div>
+ <input type="text" id="hQ" placeholder="🔍 名前で検索（過去の全履歴）" autocomplete="off" style="margin-bottom:6px">
  <div id="mHistList"></div>
 </div></div>
 
@@ -336,22 +244,24 @@ body[data-tab=bus] #tab-bus.on{display:flex;flex-direction:column;flex:1;min-hei
 <script>
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-/* iOSのゴム紐スクロール（端での引っ張り）を防ぐ */
-let _ty=0;
-document.addEventListener('touchstart',e=>{_ty=e.touches[0].clientY},{passive:true});
+/* iOSのゴム紐スクロール（端での引っ張り）を防ぐ（横スワイプは邪魔しない） */
+let _ty=0,_tx=0;
+document.addEventListener('touchstart',e=>{_ty=e.touches[0].clientY;_tx=e.touches[0].clientX},{passive:true});
 document.addEventListener('touchmove',e=>{
+  const dx=e.touches[0].clientX-_tx, dy=e.touches[0].clientY-_ty;
+  if(Math.abs(dx)>Math.abs(dy)) return;
   let el=e.target;
   while(el&&el!==document.body&&el!==document.documentElement){
     if(el.scrollHeight>el.clientHeight+1&&/(auto|scroll)/.test(getComputedStyle(el).overflowY)) break;
     el=el.parentElement;
   }
   if(!el||el===document.body||el===document.documentElement){e.preventDefault();return}
-  const dy=e.touches[0].clientY-_ty, top=el.scrollTop<=0, bot=el.scrollTop+el.clientHeight>=el.scrollHeight-1;
+  const top=el.scrollTop<=0, bot=el.scrollTop+el.clientHeight>=el.scrollHeight-1;
   if((top&&dy>0)||(bot&&dy<0)) e.preventDefault();
 },{passive:false});
 const uid=()=>Math.random().toString(36).slice(2,10);
 const KEY='myDash.v1', URLKEY='myDash.gas';
-let S={buses:[],xfers:[],recs:[],meals:[],gl:[],chk:{},todos:[]}, ui={day:null,pri:'B',editStop:null,editTodo:null};
+let S={meals:[],gl:[],chk:{},todos:[]}, ui={pri:'B',editTodo:null};
 
 /* ---------- 保存・同期 ---------- */
 try{const r=localStorage.getItem(KEY); if(r) S=Object.assign(S,JSON.parse(r));}catch(e){}
@@ -369,7 +279,7 @@ async function push(){
 async function pull(){
   if(!gas()) return msg('URL未設定');
   try{const r=await fetch(gas()); const d=await r.json();
-    if(d&&(d.stops||d.todos)){S=Object.assign({buses:[],xfers:[],recs:[],meals:[],gl:[],chk:{},todos:[]},d);try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}renderAll();msg('読み込みました')}
+    if(d&&(d.stops||d.todos||d.meals||d.gl)){S=Object.assign({meals:[],gl:[],chk:{},todos:[]},d);try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}renderAll();msg('読み込みました')}
     else msg('シートにデータがありません');
   }catch(e){msg('読込失敗: '+e.message)}
 }
@@ -384,177 +294,8 @@ $$('nav button').forEach(b=>b.onclick=()=>{
   $$('nav button').forEach(x=>x.classList.toggle('on',x===b));
   $$('.tab').forEach(t=>t.classList.toggle('on',t.id==='tab-'+b.dataset.t));
   document.body.classList.toggle('todo-on',b.dataset.t==='todo');
-  $('#ttl').textContent=({bus:'🚌 バス時刻表',goal:'🎯 目標管理',meal:'食事記録',set:'⚙️ 設定',todo:'✅ やることリスト'})[b.dataset.t];document.body.dataset.tab=b.dataset.t;if(b.dataset.t==='goal')renderGoal();if(b.dataset.t==='meal')renderMeal();if(b.dataset.t==='set')fillSettings();
-  if(b.dataset.t==='bus'){scrollNext();pollNear()}
+  $('#ttl').textContent=({goal:'🎯 目標管理',meal:'食事記録',set:'⚙️ 設定',todo:'✅ やることリスト'})[b.dataset.t];document.body.dataset.tab=b.dataset.t;if(b.dataset.t==='goal')renderGoal();if(b.dataset.t==='meal')renderMeal();if(b.dataset.t==='set')fillSettings();
 });
-
-/* ---------- バス時刻表 ---------- */
-const LEGS={o1:{n:'行き①',f:'野方駅南口',t:'王子駅前'},o2:{n:'行き②',f:'王子駅前',t:'堀船'},r1:{n:'帰り①',f:'堀船',t:'王子駅前'},r2:{n:'帰り②',f:'王子駅前',t:'野方駅南口'}};
-const CROWD=['','空いている','ふつう','混雑','激混み'];
-const toMin=t=>{const m=/^(\d{1,2}):(\d{2})/.exec(t||'');return m?+m[1]*60+ +m[2]:null};
-const fT=t=>(t||'').slice(0,5).replace(/^0/,'');
-const NEXT={o1:'o2',r1:'r2'};
-const XF=()=>(S.xfer===0||S.xfer)?+S.xfer:5;
-const CCOL=['','#16a34a','#2563eb','#f59e0b','#e11d48'], XCOL=['','#16a34a','#84cc16','#f59e0b','#e11d48'];
-const XRES_S=['','スムーズ成功','少し待って成功','短すぎて失敗','長すぎて失敗'];
-const dlt=(a,s)=>(a&&s)?toMin(a)-toMin(s):null;
-const sd=d=>d==null?'':(d>0?'+'+d:''+d);
-const stat=(a,b)=>{const r=S.recs.filter(x=>x.busId===a&&x.xBusId===b&&x.xRes>0);return r.length?`実績 ○${r.filter(x=>x.xRes<=2).length}/${r.length}`:'実績なし'};
-const byDep=l=>l.slice().sort((p,q)=>toMin(p.dep)-toMin(q.dep));
-function cand(b){
-  const nl=NEXT[b.leg], am=toMin(b.arr); if(!nl||am===null) return null;
-  return byDep(S.buses.filter(x=>x.leg===nl)).find(x=>toMin(x.dep)>=am+XF())||false;
-}
-let nearBusy=false;
-const nearTxt=n=>n?`　<span style="color:${n.ahead<=2?'var(--red)':'var(--pri)'};font-weight:700">接近中 ${n.ahead===0?'まもなく':'あと'+n.ahead+'停留所'}</span>`:'';
-const apLine=n=>n?`<div class="xf"><b style="color:${n.ahead<=2?'var(--red)':'var(--pri)'}">接近中</b>　${n.ahead===0?'次の停留所が乗り場です':'乗り場まで あと'+n.ahead+'停留所'}${n.loc?'（現在 '+esc(n.loc)+' 付近）':''}</div>`:'';
-async function pollNear(){
-  if(nearBusy||!gas()||!ui.ttDt||document.hidden||!$('#tab-bus').classList.contains('on')||!ui.leg) return;
-  const leg=ui.leg; nearBusy=true;
-  try{
-    const r=await fetch(gas()+'?action=near&leg='+leg), d=JSON.parse(await r.text());
-    if(d.ok){ui.near={leg,updated:d.updated,buses:d.buses};renderBus(false)}
-  }catch(e){}
-  nearBusy=false;
-}
-function renderBus(f=true){
-  ui.leg=ui.leg||(new Date().getHours()<12?'o1':'r1');
-  $$('#legSeg button').forEach(b=>b.classList.toggle('on',b.dataset.l===ui.leg));
-  const L=LEGS[ui.leg];
-  const list=byDep(S.buses.filter(b=>b.leg===ui.leg));
-  const now=new Date(), nm=now.getHours()*60+now.getMinutes();
-  const nx=list.find(b=>toMin(b.dep)>=nm);
-  const nb=(ui.near&&ui.near.leg===ui.leg)?ui.near.buses:[], nearOf=b=>nb.find(x=>x.dep===String(b.dep).slice(0,5));
-  let h=`<div class="route"><b>${L.f}</b> → <b>${L.t}</b>　<small>${ui.ttDt?DT_NAME[ui.ttDt]+'ダイヤ　':''}タップで詳細</small></div>`;
-  if(!list.length) h+='<div class="empty">便が未登録です。<br>右下の「＋」から登録してください。</div>';
-  else{
-    h+=nx?`<div class="next">次の便 <b>${fT(nx.dep)}</b>　あと${toMin(nx.dep)-nm}分${nearTxt(nearOf(nx))}</div>`:'<div class="next">本日の便は終了しました</div>';
-    h+=list.map(b=>{
-      let xf='';
-      if(NEXT[b.leg]&&b.arr){
-        const c=cand(b);
-        xf=c?`<div class="xf">🔁 <b>${fT(c.dep)}</b>発に接続可（待ち${toMin(c.dep)-toMin(b.arr)}分）　${stat(b.id,c.id)}</div>`
-            :`<div class="xf">🔁 乗継可能な便なし（乗換${XF()}分）</div>`;
-      }
-      return `<div class="busw ${toMin(b.dep)<nm?'past':''}"><div class="bus" data-id="${b.id}"><span class="tm ${nx&&nx.id===b.id?'nx':''}">${fT(b.dep)}</span><span class="ar">→</span><span class="tm2">${fT(b.arr)||'--'}</span>${+b.crowd>0?`<span class="cr c${b.crowd}">${CROWD[b.crowd]}</span>`:''}<span class="nt">${esc(b.note)}</span><button class="btn rb" data-rec="${b.id}">記録</button></div>${apLine(nearOf(b))}${xf}</div>`;
-    }).join('');
-  }
-  if(ui.ttDt&&list.length) h+=`<div style="margin-top:10px"><small>時刻表・接近情報: 公共交通オープンデータセンター（東京都交通局）${ui.near&&ui.near.leg===ui.leg?'　接近情報 '+esc(ui.near.updated)+' 更新':''}</small></div>`;
-  $('#busBody').innerHTML=h;
-  const id=nx?nx.id:null; if(f||ui.lastNx!==id) scrollNext(); ui.lastNx=id;
-}
-function scrollNext(){setTimeout(()=>{const e=$('.tm.nx');if(e&&$('#tab-bus').classList.contains('on'))e.scrollIntoView({block:'center',behavior:'smooth'})},80)}
-$('#legSeg').onclick=e=>{const b=e.target.closest('button');if(b){ui.leg=b.dataset.l;renderBus();pollNear()}};
-$('#busBody').onclick=e=>{
-  const x=e.target.closest('[data-rec]'); if(x) return openRec(x.dataset.rec);
-  const r=e.target.closest('.bus'); if(r) openDet(r.dataset.id);
-};
-
-/* 記録 */
-const recsOf=id=>S.recs.filter(r=>r.busId===id).sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:a.ts-b.ts);
-const recFind=(id,d)=>S.recs.find(r=>r.busId===id&&r.date===d);
-function openRec(id,date,fromDet){
-  const b=S.buses.find(x=>x.id===id); if(!b) return;
-  ui.recBus=id; ui.reopen=fromDet?id:null;
-  $('#rT').textContent=LEGS[b.leg].n+' '+fT(b.dep)+(b.arr?'→'+fT(b.arr):'')+' の記録';
-  $('#rDate').value=date||todayStr();
-  const nl=NEXT[b.leg]; ui.recX=!!nl; $('#rXBox').style.display=nl?'':'none';
-  if(nl){
-    const bs=byDep(S.buses.filter(x=>x.leg===nl)), c=cand(b)||bs[0];
-    $('#rXB').innerHTML=bs.length?bs.map(x=>`<option value="${x.id}">${LEGS[nl].n} ${fT(x.dep)}発</option>`).join(''):`<option value="">（${LEGS[nl].n}の便が未登録）</option>`;
-    if(c) $('#rXB').value=c.id;
-  }
-  fillRec(); open('#mRec');
-}
-function fillRec(){
-  const r=recFind(ui.recBus,$('#rDate').value)||{};
-  $('#rAD').value=r.actDep||''; $('#rAA').value=r.actArr||''; $('#rCr').value=r.crowd||0; $('#rXR').value=r.xRes||0;
-  if(r.xBusId) $('#rXB').value=r.xBusId;
-  $('#rDel').style.display=r.id?'':'none'; calcRec();
-}
-function calcRec(){
-  const b=S.buses.find(x=>x.id===ui.recBus); if(!b) return;
-  const f=(a,s)=>{const d=dlt(a,s);return d===null?'':d>0?'　＋'+d+'分遅れ':d<0?'　'+(-d)+'分早い':'　定刻'};
-  $('#rDD').textContent=f($('#rAD').value,b.dep); $('#rDA').textContent=f($('#rAA').value,b.arr);
-}
-$('#rDate').onchange=fillRec; $('#rAD').oninput=calcRec; $('#rAA').oninput=calcRec;
-$('#mRec').addEventListener('click',e=>{
-  const n=e.target.closest('[data-now]'); if(!n) return;
-  const d=new Date(); $('#'+n.dataset.now).value=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); calcRec();
-});
-function afterRec(){save();close();renderBus(false);if(ui.reopen)openDet(ui.reopen)}
-$('#rSave').onclick=()=>{
-  const b=S.buses.find(x=>x.id===ui.recBus), date=$('#rDate').value||todayStr();
-  const ad=$('#rAD').value, aa=$('#rAA').value, cr=+$('#rCr').value, xr=ui.recX?+$('#rXR').value:0;
-  if(!ad&&!aa&&!cr&&!xr) return alert('いずれか1つ以上入力してください');
-  const d={date,busId:b.id,leg:b.leg,actDep:ad,actArr:aa,dd:dlt(ad,b.dep),da:dlt(aa,b.arr),crowd:cr,xBusId:xr?$('#rXB').value:'',xRes:xr};
-  const ex=recFind(b.id,date); if(ex) Object.assign(ex,d); else S.recs.push({id:uid(),ts:Date.now(),...d});
-  afterRec();
-};
-$('#rDel').onclick=()=>{if(confirm('この日の記録を削除しますか？')){S.recs=S.recs.filter(r=>!(r.busId===ui.recBus&&r.date===$('#rDate').value));afterRec()}};
-
-/* 便の詳細（グラフ） */
-function delayChart(rs){
-  const d=rs.filter(r=>r.dd!=null||r.da!=null).slice(-14); if(!d.length) return '';
-  const m=Math.max(3,...d.flatMap(r=>[Math.abs(r.dd||0),Math.abs(r.da||0)]));
-  const W=320,H=140,z=70,k=52/m,st=(W-20)/d.length,bw=Math.min(12,st/2.6);
-  let s=`<div class="route" style="margin-top:10px">遅れ（分）　<span style="color:var(--pri)">■発車</span> <span style="color:#f59e0b">■到着</span></div><svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block"><line x1="10" x2="${W-10}" y1="${z}" y2="${z}" stroke="var(--line)"/>`;
-  d.forEach((r,i)=>{
-    const cx=10+st*i+st/2;
-    [[r.dd,-bw,'var(--pri)'],[r.da,0,'#f59e0b']].forEach(([v,o,c])=>{
-      if(v==null) return; const h=Math.abs(v)*k||1;
-      s+=`<rect x="${cx+o}" y="${v>=0?z-h:z}" width="${bw}" height="${h}" fill="${c}" rx="2"/><text x="${cx+o+bw/2}" y="${v>=0?z-h-2:z+h+9}" font-size="8" text-anchor="middle" fill="var(--sub)">${sd(v)}</text>`;
-    });
-    s+=`<text x="${cx}" y="${H-4}" font-size="9" text-anchor="middle" fill="var(--sub)">${d.length<=8?r.date.slice(5).replace('-','/'):r.date.slice(8)}</text>`;
-  });
-  return s+'</svg>';
-}
-function distBlock(t,rows){
-  const mx=Math.max(...rows.map(r=>r[1])); if(!mx) return '';
-  return `<div class="route" style="margin-top:12px">${t}</div>`+rows.map(([l,n,c])=>`<div class="dist"><span class="lb">${l}</span><span class="br"><i style="width:${n/mx*100}%;background:${c}"></i></span><span class="n">${n}</span></div>`).join('');
-}
-function openDet(id){
-  const b=S.buses.find(x=>x.id===id); if(!b) return; ui.det=id;
-  const L=LEGS[b.leg], rs=recsOf(id);
-  $('#dT').textContent=L.n+' '+fT(b.dep)+(b.arr?' → '+fT(b.arr):'');
-  let h=`<div class="route">${L.f} → ${L.t}${+b.crowd>0?'　混雑予想：'+CROWD[b.crowd]:''}${b.note?'　'+esc(b.note):''}</div>`;
-  if(!rs.length) h+='<div class="empty">まだ記録がありません。<br>「記録する」から少しずつ入力できます。</div>';
-  else{
-    const avg=k=>{const v=rs.map(r=>r[k]).filter(v=>v!=null);return v.length?v.reduce((a,c)=>a+c,0)/v.length:null};
-    const sg=v=>v===null?'--':(v>0?'＋':'')+v.toFixed(1)+'分';
-    h+=`<div class="card" style="margin:0 0 8px"><b>${rs.length}件</b>の記録<br>平均の遅れ　発車 ${sg(avg('dd'))}　到着 ${sg(avg('da'))}</div>`;
-    h+=delayChart(rs);
-    h+=distBlock('混雑状況',[1,2,3,4].map(i=>[CROWD[i],rs.filter(r=>r.crowd===i).length,CCOL[i]]));
-    if(NEXT[b.leg]){
-      const xs=rs.filter(r=>r.xRes>0), ok=xs.filter(r=>r.xRes<=2).length;
-      h+=distBlock('乗り継ぎ結果'+(xs.length?`（成功率 ${Math.round(ok/xs.length*100)}%）`:''),[1,2,3,4].map(i=>[XRES_S[i],xs.filter(r=>r.xRes===i).length,XCOL[i]]));
-    }
-    h+='<div class="route" style="margin-top:14px">記録一覧（タップで編集）</div>'+rs.slice().reverse().slice(0,10).map(r=>`<div class="xfr" data-rd="${r.date}">${r.date.slice(5).replace('-','/')}　発${r.actDep?fT(r.actDep)+'('+sd(r.dd)+')':'--'} 着${r.actArr?fT(r.actArr)+'('+sd(r.da)+')':'--'}${r.crowd?`　<span class="cr c${r.crowd}">${CROWD[r.crowd]}</span>`:''}${r.xRes?`　<span class="${r.xRes<=2?'okm':'ngm'}">${XRES_S[r.xRes]}</span>`:''}</div>`).join('');
-  }
-  $('#dBody').innerHTML=h; open('#mDet');
-}
-$('#dBody').onclick=e=>{const r=e.target.closest('[data-rd]');if(r){close();openRec(ui.det,r.dataset.rd,true)}};
-$('#dRec').onclick=()=>{close();openRec(ui.det,null,true)};
-$('#dEdit').onclick=()=>{close();openBus(ui.det)};
-
-function openBus(id,keep){
-  ui.editBus=id; const L=LEGS[ui.leg], b=S.buses.find(x=>x.id===id)||{dep:'',arr:'',crowd:0,note:''};
-  $('#mBusT').textContent=L.n+(id?'の便を編集':'の便を登録');
-  $('#bDepL').textContent='発車時刻（'+L.f+'）'; $('#bArrL').textContent='到着時刻（'+L.t+'）';
-  $('#bDep').value=b.dep; $('#bArr').value=b.arr; $('#bCrowd').value=b.crowd||0; $('#bNote').value=b.note||'';
-  $('#bDel').style.display=id?'':'none'; $('#bAgainRow').style.display=id?'none':'';
-  open('#mBus');
-}
-function saveBus(again){
-  const dep=$('#bDep').value; if(!dep) return alert('発車時刻を入力してください');
-  const d={dep,arr:$('#bArr').value,crowd:+$('#bCrowd').value,note:$('#bNote').value.trim()};
-  if(ui.editBus)Object.assign(S.buses.find(x=>x.id===ui.editBus),d); else S.buses.push({id:uid(),leg:ui.leg,...d});
-  save(); renderBus(false);
-  if(again){openBus(null);$('#bDep').focus()} else close();
-}
-$('#bSave').onclick=()=>saveBus(false);
-$('#bSave2').onclick=()=>saveBus(true);
-$('#bDel').onclick=()=>{if(confirm('この便と記録を削除しますか？')){S.buses=S.buses.filter(x=>x.id!==ui.editBus);S.recs=S.recs.filter(r=>r.busId!==ui.editBus);save();close();renderBus(false)}};
 
 /* ---------- 目標管理 ---------- */
 const G_MAX=5;
@@ -671,7 +412,7 @@ function openTodo(id){
   $('#tTitle').value=t.title;$('#tCat').value=t.cat;$('#tBody').value=t.body;$('#tDue').value=t.due||'';$('#tNoDue').checked=!t.due;
   setPri(t.pri);$('#tDel').style.display=id?'':'none';open('#mTodo');
 }
-$('#fab').onclick=()=>{const t=document.body.dataset.tab||'bus';t==='todo'?openTodo(null):t==='meal'?openMeal(null):t==='goal'?openGoal(null):openBus(null)};
+$('#fab').onclick=()=>{const t=document.body.dataset.tab||'goal';t==='todo'?openTodo(null):t==='meal'?openMeal(null):openGoal(null)};
 $('#tSave').onclick=()=>{
   const title=$('#tTitle').value.trim(); if(!title) return alert('タイトルを入力してください');
   const d={title,pri:ui.pri,cat:$('#tCat').value.trim(),body:$('#tBody').value,due:$('#tNoDue').checked?'':$('#tDue').value};
@@ -761,11 +502,14 @@ const addD=(s,n)=>{const d=new Date(s+'T00:00:00');d.setDate(d.getDate()+n);retu
 const num=v=>Math.round((parseFloat(v)||0)*10)/10;
 const sum=(a,k)=>Math.round(a.reduce((t,m)=>t+(+m[k]||0),0)*10)/10;
 const defSlot=()=>{const h=new Date().getHours();return h<10?'朝':h<15?'昼':h<17?'間':h<22?'夕':'間'};
+/* 推移グラフ：今日から61日前（約2ヶ月）までを横スクロールで表示。画面には7日分ずつ */
+const CH_DAYS=61;
 function trendChart(key,type,col){
-  const days=[...Array(7)].map((_,i)=>addD(ui.mDay,i-6)), goal=G()[key]||0, own=!!BARCOL[key];
-  const v=days.map(d=>sum(S.meals.filter(m=>m.date===d),key)), mx=Math.max(goal*1.25,...v,1);
-  const W=320,H=150,b=125,k=95/mx,st=W/7, fm=x=>String(Math.round(x*(key==='kcal'?1:10))/(key==='kcal'?1:10));
-  let s=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block">`;
+  const N=CH_DAYS, days=[...Array(N)].map((_,i)=>addD(todayStr(),i-N+1)), goal=G()[key]||0, own=!!BARCOL[key];
+  const by={}; S.meals.forEach(m=>{(by[m.date]=by[m.date]||[]).push(m)});
+  const v=days.map(d=>sum(by[d]||[],key)), mx=Math.max(goal*1.25,...v,1);
+  const st=320/7, W=st*N, H=150, b=125, k=95/mx, fm=x=>String(Math.round(x*(key==='kcal'?1:10))/(key==='kcal'?1:10));
+  let s=`<svg viewBox="0 0 ${W} ${H}" style="width:${N/7*100}%">`;
   v.forEach((x,i)=>{
     const cx=st*i+st/2, op=days[i]===ui.mDay?1:.6, h=x*k;
     const R=(y,hh,c)=>hh>0?`<rect x="${cx-13}" y="${y}" width="26" height="${hh}" rx="2" fill="${c}" opacity="${op}"/>`:'';
@@ -775,21 +519,26 @@ function trendChart(key,type,col){
       bars=R(b-bh,bh,col)+R(b-bh-oh,oh,'#f97316')+R(b-bh-oh-rh,rh,'#dc2626');
       if(x>goal) over=`<text x="${cx}" y="${b-h-14}" font-size="9" font-weight="700" text-anchor="middle" fill="${x>goal*1.2?'#dc2626':'#ea580c'}">＋${fm(x-goal)}</text>`;
     } else bars=R(b-h,h,(type==='min'&&goal&&x>=goal&&!own)?'#16a34a':col);
-    s+=bars+over+(x?`<text x="${cx}" y="${b-h-3}" font-size="9" text-anchor="middle" fill="var(--sub)">${fm(x)}</text>`:'')+`<text x="${cx}" y="${H-8}" font-size="10" text-anchor="middle" fill="var(--sub)">${days[i].slice(5).replace('-','/')}</text>`;
+    s+=bars+over+(x?`<text x="${cx}" y="${b-h-3}" font-size="9" text-anchor="middle" fill="var(--sub)">${fm(x)}</text>`:'')
+      +`<text x="${cx}" y="${H-8}" font-size="${days[i]===ui.mDay?11:10}" ${days[i]===ui.mDay?'font-weight="700" ':''}text-anchor="middle" fill="${days[i]===ui.mDay?'var(--tx)':'var(--sub)'}">${days[i].slice(5).replace('-','/')}</text>`
+      +`<rect data-day="${days[i]}" x="${st*i}" y="0" width="${st}" height="${H}" fill="transparent"/>`;
   });
   if(goal) s+=`<line x1="0" x2="${W}" y1="${b-goal*k}" y2="${b-goal*k}" stroke="var(--sub)" stroke-dasharray="4 3"/>`;
   return s+'</svg>';
 }
 function mealChart(){return trendChart('kcal','max','var(--pri)')}
+function gotoDay(d){close();ui.mDay=d;renderMeal();$('#mScroll').scrollTop=0}
 function openNut(key){
   const [label,type,u]=NMETA[key], goal=G()[key]||0;
-  const days=[...Array(7)].map((_,i)=>addD(ui.mDay,i-6)), rec=days.filter(d=>S.meals.some(m=>m.date===d));
+  const days=[...Array(CH_DAYS)].map((_,i)=>addD(todayStr(),i-CH_DAYS+1)), rec=days.filter(d=>S.meals.some(m=>m.date===d));
   const avg=rec.length?rec.reduce((a,d)=>a+sum(S.meals.filter(m=>m.date===d),key),0)/rec.length:0;
-  $('#nT').textContent=label+'　直近7日';
-  $('#nBody').innerHTML=`<div class="route">${goal?'目標 '+goal+' '+u+(type==='min'?' 以上':' 以内'):'目標なし'}${rec.length?'　／　記録のある日の平均 '+(key==='kcal'?Math.round(avg):Math.round(avg*10)/10)+' '+u:''}</div>`+trendChart(key,type,BARCOL[key]||'var(--pri)');
-  open('#mNut');
+  $('#nT').textContent=label+'　推移';
+  $('#nBody').innerHTML=`<div class="route">${goal?'目標 '+goal+' '+u+(type==='min'?' 以上':' 以内'):'目標なし'}${rec.length?'　／　記録のある日の平均 '+(key==='kcal'?Math.round(avg):Math.round(avg*10)/10)+' '+u:''}</div><div class="route"><small>左右にスライドで最大2ヶ月前まで／棒をタップでその日を表示</small></div><div class="cw">${trendChart(key,type,BARCOL[key]||'var(--pri)')}</div>`;
+  open('#mNut'); const w=$('#nBody .cw'); w.scrollLeft=w.scrollWidth;
 }
 $('#mTotal').onclick=e=>{const n=e.target.closest('[data-nut]');if(n)openNut(n.dataset.nut)};
+$('#nBody').onclick=e=>{const r=e.target.closest('[data-day]');if(r)gotoDay(r.dataset.day)};
+$('#mChart').onclick=e=>{const r=e.target.closest('[data-day]');if(r)gotoDay(r.dataset.day)};
 const nthMon=(y,m,n)=>1+(8-new Date(y,m,1).getDay())%7+7*(n-1);
 function holSet(y){
   const H=new Set(), add=(m,d)=>H.add(m*100+d), key=dt=>(dt.getMonth()+1)*100+dt.getDate();
@@ -821,11 +570,22 @@ function renderMeal(){
   });
   $('#mList').innerHTML=h||'<div class="empty">この日の記録はありません。<br>右下の「＋」から、写真や栄養成分のスクショを登録できます。</div>';
   $('#mChart').innerHTML=mealChart();
+  const w=$('#mCW'); if(!ui.chartInit&&w.scrollWidth>w.clientWidth){w.scrollLeft=w.scrollWidth;ui.chartInit=true}
 }
 $('#mPrev').onclick=()=>{ui.mDay=addD(ui.mDay,-1);renderMeal()};
 $('#mNext').onclick=()=>{ui.mDay=addD(ui.mDay,1);renderMeal()};
 $('#mDate').onchange=()=>{ui.mDay=$('#mDate').value||todayStr();renderMeal()};
 $('#mList').onclick=e=>{const r=e.target.closest('[data-mid]');if(r)openMeal(r.dataset.mid)};
+/* 左右スワイプで日付を前後に切り替え（グラフ部分は除く） */
+let sw=null;
+$('#tab-meal').addEventListener('touchstart',e=>{
+  if(e.touches.length!==1||e.target.closest('.cw,input')){sw=null;return}
+  sw={x:e.touches[0].clientX,y:e.touches[0].clientY};
+},{passive:true});
+$('#tab-meal').addEventListener('touchend',e=>{
+  if(!sw) return; const t=e.changedTouches[0], dx=t.clientX-sw.x, dy=t.clientY-sw.y; sw=null;
+  if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.8){ui.mDay=addD(ui.mDay,dx>0?-1:1);renderMeal()}
+},{passive:true});
 $('#slotSeg').onclick=e=>{const b=e.target.closest('button');if(b){ui.slot=b.dataset.s;$$('#slotSeg button').forEach(x=>x.classList.toggle('on',x===b))}};
 function openMeal(id){
   ui.editMeal=id; ui.ai=false; ui.imgs=ui.imgs||[];
@@ -876,20 +636,25 @@ $('#mAnalyze').onclick=async()=>{
   }catch(e){st.innerHTML=`<small style="color:var(--red)">${esc(e.message)}</small>`}
   btn.disabled=false;
 };
-/* 履歴から入力 */
-function mealHistory(){
-  const seen=new Set(), out=[];
+/* 履歴から入力：空欄なら直近30件、文字を入れると過去の全履歴を名前で検索 */
+const nrm=s=>String(s||'').normalize('NFKC').toLowerCase().trim();
+function mealHistory(q){
+  const seen=new Set(), out=[], lim=q?100:30;
   S.meals.slice().sort((a,b)=>(b.ts||0)-(a.ts||0)).forEach(m=>{
+    if(out.length>=lim) return;
+    if(q&&!nrm(m.name).includes(q)) return;
     const k=m.name+'|'+Math.round(m.kcal);
-    if(out.length<30&&!seen.has(k)){seen.add(k);out.push(m)}
+    if(!seen.has(k)){seen.add(k);out.push(m)}
   });
   return out;
 }
-$('#mHist').onclick=()=>{
-  const l=mealHistory();
-  $('#mHistList').innerHTML=l.length?l.map(m=>`<div class="hrow" data-hid="${m.id}"><span class="hn">${esc(m.name)}</span><span class="hk">${Math.round(m.kcal)} kcal</span></div>`).join(''):'<div class="empty">履歴がありません。</div>';
-  open('#mHistM');
-};
+function renderHist(){
+  const q=nrm($('#hQ').value), l=mealHistory(q);
+  $('#hSub').textContent=q?`（${l.length}件ヒット）`:'（直近30件）';
+  $('#mHistList').innerHTML=l.length?l.map(m=>`<div class="hrow" data-hid="${m.id}"><span class="hn">${esc(m.name)}</span><span class="hk">${Math.round(m.kcal)} kcal</span></div>`).join(''):`<div class="empty">${q?'該当する履歴がありません。':'履歴がありません。'}</div>`;
+}
+$('#mHist').onclick=()=>{$('#hQ').value='';renderHist();open('#mHistM');$('#mHistM .modal').scrollTop=0};
+$('#hQ').oninput=renderHist;
 $('#mHistList').onclick=e=>{
   const r=e.target.closest('[data-hid]'); if(!r) return;
   const m=S.meals.find(x=>x.id===r.dataset.hid); if(!m) return;
@@ -910,58 +675,10 @@ $('#mSave').onclick=()=>{
 };
 $('#mDel').onclick=()=>{if(confirm('この記録を削除しますか？')){S.meals=S.meals.filter(x=>x.id!==ui.editMeal);save();close();renderMeal()}};
 
-/* ---------- 時刻表の自動取得（公共交通オープンデータ） ---------- */
-const TT_KEY='myDash.tt', DT_NAME={wd:'平日',sa:'土曜',ho:'休日'};
-let TT=null; try{TT=JSON.parse(localStorage.getItem(TT_KEY)||'null')}catch(e){}
-function dayTypeOf(ds){
-  const c=TT&&TT.cal;
-  if(c&&c.from&&c.to&&ds>=c.from&&ds<=c.to) return (c.ho||[]).includes(ds)?'ho':(c.sa||[]).includes(ds)?'sa':'wd';
-  const [y,m,d]=ds.split('-').map(Number), w=new Date(y,m-1,d).getDay();
-  return (w===0||holSet(y).has(m*100+d))?'ho':w===6?'sa':'wd';
-}
-function applyTT(){
-  if(!TT||!TT.legs) return false;
-  const day=todayStr(), dt=dayTypeOf(day), before=JSON.stringify(S.buses)+JSON.stringify(S.recs);
-  ui.ttDt=dt; ui.ttDay=day;
-  const old={}; S.buses.filter(b=>b.auto).forEach(b=>old[b.id]=b);
-  const fresh=[];
-  Object.keys(LEGS).forEach(leg=>((TT.legs[leg]||{})[dt]||[]).forEach(([dep,arr])=>{
-    const id=`${leg}-${dt}-${dep.replace(':','')}`, ex=old[id];
-    fresh.push(ex?Object.assign(ex,{dep,arr}):{id,leg,dep,arr,crowd:0,note:'',auto:true,dt});
-  }));
-  const key=b=>b.leg+'|'+String(b.dep).slice(0,5), byKey={}, idMap={};
-  fresh.forEach(b=>byKey[key(b)]=b);
-  const manual=S.buses.filter(b=>!b.auto).filter(m=>{
-    const a=byKey[key(m)]; if(!a) return true;
-    idMap[m.id]=a.id; if(!a.crowd&&m.crowd) a.crowd=m.crowd; if(!a.note&&m.note) a.note=m.note; return false;
-  });
-  S.buses=manual.concat(fresh);
-  S.recs.forEach(r=>{if(idMap[r.busId])r.busId=idMap[r.busId]; if(idMap[r.xBusId])r.xBusId=idMap[r.xBusId]});
-  if(JSON.stringify(S.buses)+JSON.stringify(S.recs)!==before) save();
-  return true;
-}
-async function fetchTT(refresh){
-  if(!gas()) throw new Error('Apps Script URLが未設定です');
-  const r=await fetch(gas()+'?action='+(refresh?'refresh':'timetable')), raw=await r.text(); let d;
-  try{d=JSON.parse(raw)}catch(e){throw new Error('サーバーの応答を読み取れませんでした: '+raw.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim().slice(0,120))}
-  if(!d.ok) throw new Error(d.error||'取得に失敗しました');
-  if(refresh) return fetchTT(false);
-  TT=d; try{localStorage.setItem(TT_KEY,JSON.stringify(d));localStorage.setItem('myDash.ttDay',todayStr())}catch(e){}
-  applyTT(); renderBus(); fillSettings(); return d;
-}
-$('#ttFetch').onclick=async()=>{
-  const m=$('#ttMsg'), b=$('#ttFetch');
-  if(!gas()){m.innerHTML='<small style="color:var(--red)">先に、上のデータ同期で、Apps Script URLを入力してください</small>';return}
-  m.innerHTML='<small>取得中…（20〜40秒かかります）</small>'; b.disabled=true;
-  try{await fetchTT(true)}catch(e){m.innerHTML=`<small style="color:var(--red)">${esc(e.message)}</small>`}
-  b.disabled=false;
-};
-
 /* ---------- 設定 ---------- */
-function fillSettings(){$('#gasUrl').value=gas();$('#xfMin').value=XF();fillGoals();$('#ttMsg').innerHTML='<small>'+(TT&&TT.updated?'取得済み（'+esc(TT.updated)+'）':'未取得')+(ui.ttDt?'　今日は'+DT_NAME[ui.ttDt]+'ダイヤ':'')+'</small>'}
+function fillSettings(){$('#gasUrl').value=gas();fillGoals()}
 const setUrl=()=>{try{localStorage.setItem(URLKEY,$('#gasUrl').value.trim())}catch(e){}};
 $('#gasUrl').onchange=()=>{setUrl();msg('URLを保存しました')};
-$('#xfMin').onchange=()=>{S.xfer=Math.max(0,parseInt($('#xfMin').value)||5);$('#xfMin').value=S.xfer;save();renderBus(false)};
 Object.values(GID).forEach(id=>$('#'+id).onchange=()=>{readGoals();save();renderMeal()});
 $('#gReset').onclick=()=>{fillGoals(DEF_GOALS);readGoals();save();renderMeal()};
 $('#push').onclick=()=>{setUrl();push()};
@@ -971,22 +688,16 @@ $('#pull').onclick=()=>{setUrl();pull()};
 function migrate(){
   if(!S.goals){S.goals=Object.assign({},DEF_GOALS);if(+S.goal>0)S.goals.kcal=+S.goal}
   if(!S.gl)S.gl=[]; if(!S.chk)S.chk={};
-  if(!S.recs)S.recs=[]; if(!S.meals)S.meals=[];
-  if(S.xfers&&S.xfers.length&&!S.recs.length){
-    S.recs=S.xfers.map(x=>({id:uid(),ts:x.ts||0,date:x.date,busId:x.aId,leg:x.leg,actDep:'',actArr:x.actual||'',dd:null,da:null,crowd:0,xBusId:x.bId,xRes:x.ok?1:3}));
-    S.xfers=[]; save();
-  }
+  if(!S.meals)S.meals=[]; if(!S.todos)S.todos=[];
+  /* 旧バス機能のデータを完全に削除 */
+  const old=['buses','xfers','recs','xfer','stops'].filter(k=>k in S);
+  old.forEach(k=>delete S[k]);
+  try{localStorage.removeItem('myDash.tt');localStorage.removeItem('myDash.ttDay')}catch(e){}
+  if(old.length) save();
 }
-function renderAll(){migrate();applyTT();renderBus();renderGoal();renderTodo();renderMeal();fillSettings()}
+function renderAll(){migrate();renderGoal();renderTodo();renderMeal();fillSettings()}
 renderAll();
 if(gas()) pull();
-function ttDaily(){
-  if(ui.ttDay&&ui.ttDay!==todayStr()){applyTT();renderBus();fillSettings()}
-  if(gas()&&localStorage.getItem('myDash.ttDay')!==todayStr()) fetchTT(false).catch(()=>{});
-}
-ttDaily();
-setInterval(()=>{renderBus(false);ttDaily();pollNear()},30000);
-document.addEventListener('visibilitychange',()=>{if(!document.hidden){renderBus();ttDaily();pollNear()}});
 </script>
 </body>
 </html>
